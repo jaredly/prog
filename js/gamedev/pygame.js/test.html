@@ -1,0 +1,64 @@
+<html>
+<head>
+<title>Pygame.js</title>
+</head>
+<body>
+<canvas id='pygame.js'></canvas>
+<canvas id='double' style='visibility:hidden'></canvas>
+<script>
+
+function Surface(id,size){
+    var that = document.getElementById(id);
+    var ctx = that._ctx = that.getContext('2d');
+    that.setAttribute('width',size[0]);
+    that.setAttribute('height',size[1]);
+    that.fill = function(color){
+        ctx.fillStyle = rgb2c(color);
+        ctx.fillRect(0,0,size[0],size[1]);
+    }
+    return that;
+}
+
+var int = parseInt;
+
+function rgb2c([r,g,b]){
+    return 'rgb('+parseInt(r)+','+parseInt(g)+','+parseInt(b)+')';
+}
+
+var pygame = {
+    _screen:Surface('pygame.js',[200,200]),
+    _buff:Surface('double',[200,200]),
+    display:{
+        set_mode:function(size){
+            return pygame._screen;
+        },
+        flip:function(){
+            //pygame._screen._ctx.drawImage(pygame._buff,0,0);
+        }
+    },
+    draw:{
+        line:function(scr,color,p1,p2,w){
+            scr._ctx.strokeStyle = rgb2c(color);
+            scr._ctx.lineWidth = w||1;
+            scr._ctx.beginPath()
+            scr._ctx.lineTo(int(p1[0]),int(p1[1]));
+            scr._ctx.lineTo(int(p2[0]),int(p2[1]));
+            scr._ctx.stroke();
+        }
+    }
+}
+
+var running = true;
+var scren = pygame.display.set_mode([200,200]);
+function loop(){
+    if (!running)clearInterval(tm);
+    scren.fill([Math.random()*255,Math.random()*255,Math.random()*255]);
+    pygame.draw.line(scren,[0,0,0],[Math.random()*200,Math.random()*200],[Math.random()*200,Math.random()*200],2);
+    //pygame.display.flip();
+}
+
+var tm = setInterval(loop,200);
+
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<html>
+<head>
+<title>Flipbookr</title>
+<link rel="stylesheet" href="main.css">
+</head>
+<body>
+<script src="main.inc.js"></script>
+<script src="/prog/js/ajax.js"></script>
+<div id="back"></div>
+<canvas id="canv" width="300px" height="300px"></canvas>
+<div id="tools">
+<span onclick="_Next()">Next</span>
+<span onclick="_Clear()">Clear</span>
+<span onclick="_White()">White</span>
+<span onclick="_Black()">Black</span>
+<span onclick="_Erase()">Erase</span>
+<span onclick="_Play()">Play</span>
+Mode:<span onclick="_Mode(this)">Normal</span></div>
+<div id="pages"></div>
+<canvas id="mouse" width="10px" height="10px"></canvas>
+<script src="main.classy.js"></script>
+</body>

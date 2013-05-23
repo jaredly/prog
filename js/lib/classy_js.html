@@ -1,0 +1,98 @@
+<html>
+<head>
+<script src='classy_js.js'></script>
+</head>
+<body>
+<script>
+/**
+class animal:
+    def __init__(self):
+        self.times = 0
+    
+    def hello(self):
+        self.times += 1
+        print ('Ive been hello\'d '+self.times+' times.');
+    
+    def settype(self,typ):
+        self.typ = type
+    
+    def gettype(self):
+        return self.typ
+
+class dog(animal):
+
+    def hello(self,x):
+        print x
+        animal.hello(self)
+        
+    def settype(self,typ):
+        animal.settype(self,typ+' dog')
+**/
+
+var animal = Class([],{
+    __init__:function(self){self.times=0;},
+    hello:function(self){
+        self.times += 1;
+        console.log('Ive been hello\'d '+self.times+' times.');
+    },
+    settype:function(self,typ){
+        self.typ = typ;
+    },
+    gettype:function(self){return self.typ;}
+});
+/**
+var animal = (function(){
+    var self = new_class();
+    self.__init__ = function(self){
+        self.times = 0;
+    }
+    self.hello = function(self){
+        self.times += 1;
+        console.log('Ive been hello\'d '+self.times+' times.');
+    }
+    self.settype = function(self,typ){
+        self.typ = typ;
+    }
+    self.gettype = function(self){
+        return self.typ;
+    }
+    return self;
+})()
+
+var dog = (function(){
+    var self = new_class(animal);
+    self.hello = function(self,x){
+        console.log('got '+x);
+        animal.hello(self);
+    }
+    self.settype = function(self,typ){
+        animal.settype(self,typ+' dog');
+    }
+    return self;
+})();**/
+
+var dog = Class([animal],{
+    hello:function(self,x){
+        console.log("got "+x);
+        animal.hello(self);
+    },
+    settype:function(self,typ){
+        animal.settype(self,typ+' dog');
+    }
+});
+
+var a1 = animal();
+a1.hello();
+a1.hello();
+a1.settype('mon');
+console.log(a1.gettype());
+
+var d1 = dog();
+d1.hello(3);
+d1.hello(2);
+d1.hello(1);
+d1.settype('schnowzer');
+console.log(d1.gettype());
+
+</script>
+</body>

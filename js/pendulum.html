@@ -1,0 +1,134 @@
+<html>
+<body><canvas id='canv' width=600 height=600></canvas>
+
+<script>
+
+var g = -9.8;
+
+function circle(x,y,r,color){
+    ctx.fillStyle = color;
+    ctx.beginPath()
+    ctx.arc(x,y,r,0,Math.PI*2,true);
+    ctx.fill()
+}
+function line(x,y,a,b,color){
+    ctx.strokeStyle=color;
+    ctx.beginPath();
+    ctx.moveTo(x,y);
+    ctx.lineTo(a,b);
+    ctx.stroke();
+}
+function rect(x,y,w,h,color){
+    ctx.fillStyle=color;
+    ctx.fillRect(x,y,w,h);
+}
+function AddVectors(v,t,v2,t2){
+    vx = v*Math.cos(t);
+    vy = v*Math.sin(t);
+    vx += v2*Math.cos(t2);
+    vy += v2*Math.sin(t2);
+    return [Math.sqrt(vx*vx+vy*vy),Math.atan(vy/vx)];
+}
+
+function Pendulum(parent,length,mass,angle){
+    var that = {};
+    that.type="pendulum";
+    that.mass = mass;
+    that.length=length;
+    that.theta=angle;
+    that.parent=parent;
+    that.parent.child=that;
+    that.speed=0;
+    that.vector = [that.mass*g,0];
+    that.gravity = [that.mass*g,0];
+    
+    that.center = function(){
+        if (that.parent.type=="pendulum"){
+            return [that.parent.x,that.parent.y];
+        }else{return that.parent;}
+    }
+    that.torque = function(){
+        return that.vector[0]*Math.sin(that.theta-that.vector[1])/that.mass;
+    }
+    that.tension = function(){
+        return [that.vector[0]*Math.cos(that.theta-that.vector[1])/that.mass,that.theta];
+    }
+    that.momentum = function(){
+        return that.mass*g*Math.cos(that.theta-that.vector[1]);
+    }
+    that.child_tension = function(){
+        if (that.child){
+            var [v2,t2] = [that.child.vector[0],that.child.theta];
+            var [v,t] = that.vector;
+            var rvx = v*Math.cos(t) + v2*Math.cos(t2);
+            var rvy = v*Math.sin(t) + v2*Math.sin(t2);
+            that.vector = [Math.sqrt(rvx*rvx+rvy*rvy), Math.atan(rvx/rvy)];
+            //that.vector = AddVectors(v, t, that.gravity[0], that.gravity[1]);
+        }
+    }
+    that.step = function(){
+        that.child_tension()
+        that.speed += that.torque();
+        that.theta += Math.atan(that.speed/that.length);
+        var center = that.center();
+        that.x = center[0] - that.length*Math.sin(that.theta);
+        that.y = center[1] + that.length*Math.cos(that.theta);
+    }
+    that._parent = function(){
+        if (that.child){
+            var speed = that.momentum();
+            var [v,t] = [that.child.mass*g * Math.cos(that.child.theta), that.theta];
+            var total = AddVectors(v,t,that.mass*g,that.theta);
+            total[0]*=100
+            var [x,y]=that.center();
+        } 
+    }
+    that.line = function(){
+        var [x,y]=that.center();
+        line(x,y,that.x,that.y,'red');
+    }
+    that.circle = function(){
+        circle(that.x,that.y,that.mass,'green');
+    }
+    
+    return that;
+}
+
+var pds = [];
+
+function lines(){
+    for (var i=0;i<pds.length;i++){
+        pds[i].line();
+    }
+}
+function circles(){
+    for (var i=0;i<pds.length;i++){
+        pds[i].circle();
+    }
+}
+function steps(){
+    for (var i=0;i<pds.length;i++){
+        pds[i].step();
+    }
+}
+
+var ctx = document.getElementById('canv').getContext('2d')
+
+pds.push(Pendulum([300,300],100,15,1));
+pds.push(Pendulum(pds[0],100,15,0));
+// pds.push(Pendulum(pds[1],100,5,Math.PI/3));
+
+function step(){
+    ctx.clearRect(0,0,600,600);
+    steps();
+    lines();
+    circles();
+    setTimeout(step,20);
+}
+
+step()
+
+
+</script>
+
+</body></html>

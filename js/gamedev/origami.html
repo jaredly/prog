@@ -1,0 +1,174 @@
+<html>
+<head>
+    <title>Origami</title>
+    <script src="/prog/js/lib/dom.inc.js"></script>
+    <script src="/prog/js/lib/math.inc.js"></script>
+    <script src="/prog/js/lib/canvas.inc.js"></script>
+    <script src='/prog/js/lib/include.js'></script>
+    <script src='/prog/js/lib/classy_js.js'></script>
+</head>
+<body>
+<canvas id='screen'></canvas>
+<div id='energy'></div>
+<script>
+var Shape = Class([],{
+    __init__:function(self,pts,color){
+        self.pts = pts;
+        self.color = color;
+        self.connecteds = [];
+    },
+    draw:function(self,ctx,drawn){
+        if (!drawn)drawn = [];
+        if (drawn.indexOf(self)!=-1)return;
+        if (!wire){
+            ctx.beginPath();
+            ctx.fillStyle = 'white';
+            ctx.moveTo(self.pts[0][0],self.pts[0][1]);
+            for (var i=0;i<self.pts.length;i++){
+                ctx.lineTo(self.pts[i][0],self.pts[i][1]);
+            }
+            ctx.lineTo(self.pts[0][0],self.pts[0][1]);
+            ctx.fill();
+        }
+        ctx.beginPath();
+        ctx.strokeStyle = self.color;
+        ctx.moveTo(self.pts[0][0],self.pts[0][1]);
+        for (var i=0;i<self.pts.length;i++){
+            ctx.lineTo(self.pts[i][0],self.pts[i][1]);
+        }
+        ctx.lineTo(self.pts[0][0],self.pts[0][1]);
+        ctx.stroke();
+        drawn.push(self);
+        for (var a=0;a<self.connecteds.length;a++)
+            self.connecteds[a][1].draw(ctx,drawn);
+    },
+    fold:function(self,p1,p2,fromcon){
+        var oneside = [];
+        var otherside = [];
+        var onside = 1;
+        var onedir = null;
+        var pts = self.pts.slice();
+        var cl = [];
+        pts.push(self.pts[0]);
+        for (var i=0;i<pts.length;i++){
+            var dt = angle_to(pts[i],pline2point(p1,p2,pts[i]));
+            if (onedir===null)
+                onedir=dt
+            
+            if (Math.abs(onedir-dt)<.5 && onside==2){
+                if (vlog)dline(p1,p2,'red');
+                if (vlog)dline(pts[i-1],pts[i],'red');
+                if (tlog)console.log(p1,p2,pts[i-1],pts[i]);
+                var cp = line2line(p1,p2,pts[i-1],pts[i],true);
+                if (vlog)dpoint(cp,'yellow');
+                if (tlog)console.log(cp);
+                otherside.push(cp);
+                oneside.push(cp);
+                onside = 1;
+                cl.push(cp);
+            }else if (Math.abs(onedir-dt)>.5 && onside==1){
+                if (vlog)dline(p1,p2,'blue');
+                if (vlog)dline(pts[i-1],pts[i],'blue');
+                if (tlog)console.log(p1,p2,pts[i-1],pts[i]);
+                var cp = line2line(p1,p2,pts[i-1],pts[i],true);
+                if (vlog)dpoint(cp,'yellow');
+                if (tlog)console.log(cp);
+                oneside.push(cp);
+                otherside.push(cp);
+                onside = 2;
+                cl.push(cp);
+            }
+            if (i==pts.length-1)continue;
+            if (Math.abs(onedir-dt)>.5)oneside.push(self.pts[i]);
+            else otherside.push(self.pts[i]);
+        }
+        if (tlog)console.log(oneside,otherside);
+        var ao = polyarea(oneside);
+        var at = polyarea(otherside);
+        
+        if (typeof(fromcon)!='undefined'){
+            if (Math.abs(onedir-fromcon)>.5){
+                var t = oneside;
+                oneside = otherside;
+                otherside = t;
+            }
+        }else{
+            if (at>ao){
+                var t = oneside;
+                oneside = otherside;
+                otherside = t;
+            }
+        }
+        self.pts = oneside;
+        if (vlog)self.draw(ctx);
+        for (var a=0;a<self.connecteds.length;a++){
+            self.connecteds[a][1].fold(p1,p2,onedir);
+        }
+        for (var i=0;i<otherside.length;i++){
+            otherside[i] = pointoverline(otherside[i],p1,p2);
+        }
+        self.connecteds.push([cp,Shape(otherside,self.color)]);
+    }
+});
+
+function dline(p1,p2,c){console.log(p1[0],p1[1],p2[0],p2[1],c);
+    ctx.beginPath();
+    ctx.strokeStyle = c;
+    ctx.moveTo(p2[0],p2[1]);
+    ctx.lineTo(p1[0],p1[1]);
+    ctx.stroke();
+}
+
+function dpoint(p,c){
+    ctx.fillStyle = c;
+    ctx.fillStyle = c;
+    ctx.beginPath();
+    ctx.arc(p[0],p[1],5,0,Math.PI*2,true);
+    ctx.fill();
+}
+
+function polyarea(pts){
+    if (!pts || pts==[] || !pts.length)return 0;
+    var x = 0;
+    var y = 0;
+    for (var i=0;i<pts.length;i++){
+        x+=pts[i][0];
+        y+=pts[i][1];
+    }
+    x/=pts.length;
+    y/=pts.length;
+    var ta = 0;
+    for (var i=0;i<pts.length-1;i++){
+        ta += triarea([x,y],pts[i],pts[i+1]);
+    }
+    ta += triarea([x,y],pts[i],pts[0]);
+    return ta;
+}
+
+function triarea(p1,p2,p3){
+    return line2point(p1,p2,p3)*dst(p1,p2)/2;
+}
+var vlog = false;
+var tlog = false;
+var canv = $('screen');
+var wire = false;
+canv.width = 300;
+canv.height = 300;
+canv.style.width = '300px';
+canv.style.height = '300px';
+var ctx = canv.getContext('2d');
+var baseShape = Shape([[20,20],[20,150],[150,150],[150,20]],'green');
+
+baseShape.color='blue'
+baseShape.fold([100,10],[10,100]);
+//baseShape.fold([10,50],[100,160]);
+//vlog=true;
+tlog=true;
+baseShape.fold([81,10],[85,160]);
+baseShape.draw(ctx);
+
+</script>
+
+</body>
+</html>
+    

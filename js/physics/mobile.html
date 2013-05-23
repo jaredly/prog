@@ -1,0 +1,486 @@
+<html>
+<head>
+<title>Mobile Simulator</title>
+<script src="../include.js"></script>
+<script src='../classy_js.js'></script>
+</head>
+<body>
+<style>
+canvas{
+    position:relative;
+    top:0px;
+    left:0px;
+}
+* {
+    padding:0;
+    margin:0;
+}
+</style>
+<table>
+<tr>
+<td>
+<canvas id='pygame.js' width='500px' height='400px'></canvas>
+</td>
+<td style="padding-top:20px;vertical-align:top;">
+    <h2>Rods</h2>
+    <table id='rods'>
+    <tr><b><td></td><td><b>Length</b></td><td><b>Distance</b></td><td><b>Mass</b></td><td><b>Total</b></td><td><b>Score</b></td></b></tr>
+    </table>
+</td>
+<td style="padding-top:20px;vertical-align:top;">
+    <h2>Masses</h2>
+    <table id='masses'>
+    </table>
+</td>
+</tr>
+</table>
+
+<div id='status'></div>
+
+<script>
+function $(e){return document.getElementById(e);}
+
+var connected = [0,200,0];
+var disconnected = [0,0,0];
+
+var hslToRgb = function(h, s, l){
+    var r, g, b;
+
+    if(s == 0){
+        r = g = b = l; // achromatic
+    }else{
+        function hue2rgb(p, q, t){
+            if(t < 0) t += 1;
+            if(t > 1) t -= 1;
+            if(t < 1/6) return p + (q - p) * 6 * t;
+            if(t < 1/2) return q;
+            if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        };
+
+        var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        var p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+    }
+
+    return [r * 255, g * 255, b * 255];
+};
+
+
+var Rect = Class([],{
+    __init__:function(self,x,y,w,h){
+        self.x=x;
+        self.y=y;
+        self.w=w;
+        self.h=h;
+    },
+    colliderect:function(self,other){
+        var xs,ys;
+        if (self.x<other.x) xs = (other.x-self.x)<self.w;
+        else xs = (self.x-other.x)<other.w;
+        if (self.y<other.y) ys = (other.y-self.y)<self.h;
+        else ys = (self.y-other.y)<other.h;
+        return xs && ys;
+    },
+    collidepoint:function(self,[x,y]){
+        return (self.x<=x && x<=self.x+self.w && self.y<=y && y<=self.y+self.h);
+    },
+    pts:function(self){
+        return [self.x,self.y,self.w,self.h];
+    },
+    move:function(self,[x,y]){
+        return Rect(self.x+x,self.y+y,self.w,self.h);
+    },
+    move_ip:function(self,[x,y]){
+        self.x+=x;
+        self.y+=y;
+    }
+});
+
+function fact(x){
+    if (x>0)return (x+fact(x-1));
+    return x;
+}
+
+function rgb2c([r,g,b]){return 'rgb('+parseInt(r)+','+parseInt(g)+','+parseInt(b)+')';}
+
+function hsl2c([h,s,l]){return 'hsl('+parseInt(h)+','+parseInt(s)+','+parseInt(l)+')';}
+
+var Ctx = Class([],{
+    __init__:function(self,ctx){
+        self.ctx = ctx;console.log(ctx);
+    },
+    line:function(self,[x,y],[a,b],color){
+        self.ctx.strokeStyle = rgb2c(color);
+        self.ctx.beginPath();
+        self.ctx.moveTo(x,y);
+        self.ctx.lineTo(a,b);
+        self.ctx.stroke();
+    },
+    line2:function(self,[x,y],[a,b],color,w){
+        if (w)self.ctx.lineWidth = w;
+        self.ctx.strokeStyle = rgb2c(color);
+        self.ctx.beginPath();
+        self.ctx.moveTo(x,y);
+        self.ctx.lineTo(x+a,y+b);
+        self.ctx.stroke();
+    },
+    rect:function(self,[x,y,a,b],color,w){//console.log(self,x,y,a,b
+        if (w){
+            self.ctx.strokeStyle = rgb2c(color);
+            self.ctx.lineWidth = w;
+            self.ctx.beginPath();
+            self.ctx.moveTo(x,y);
+            self.ctx.lineTo(x+a,y);
+            self.ctx.lineTo(x+a,y+b);
+            self.ctx.lineTo(x,y+b);
+            self.ctx.lineTo(x,y);
+            self.ctx.stroke();
+        }else{
+            self.ctx.fillStyle = rgb2c(color);
+            self.ctx.fillRect(x,y,a,b);
+        }
+    },
+    fill:function(self,color){
+        self.ctx.fillStyle = rgb2c(color);
+        self.ctx.fillRect(0,0,500,500);
+    },
+    circle:function(self,[x,y],r,color){
+        self.ctx.fillStyle = rgb2c(color);
+        self.ctx.beginPath();
+        self.ctx.arc(x,y,r,0,Math.PI*2,true);
+        self.ctx.fill();
+    }
+});
+
+var canv = $('pygame.js');
+var ctx = Ctx(canv.getContext('2d'));
+var masses = [];
+var rods = [];
+
+function colorimg(color){
+    var c = cE('canvas');
+    c.width=20;
+    c.height = 20;
+    var ctx = c.getContext('2d');
+    ctx.fillStyle = rgb2c(color);
+    ctx.fillRect(0,0,20,20);
+    var i = new Image();
+    i.src = c.toDataURL();
+    return i;
+}
+
+function dist([x,y],[a,b]){
+    return Math.sqrt((a-x)*(a-x)+(b-y)*(b-y));
+}
+
+var Rod = Class([],{
+    __init__:function(self,[x,y],width,mass,color){
+        
+        self.color = color;
+        self.realwidth = width*0.3048;
+        self.rect = Rect(x,y,width*25,5);
+        self.mass = mass;
+        self.moving = false;
+        self.realr = self.realwidth/2;
+        self.r = self.realr/.3048*25;
+        self.top = false;
+        
+        var row = $('rods').appendChild(cE('tr'));
+        //row.style.border = '2px solid '+rgb2c(color);
+        row.appendChild(cE('td').appendChild(colorimg(color)).parentNode);
+        self.log = {};
+        self.log['row'] = row;
+        self.log['width'] = row.appendChild(cE('td').appendChild(cTN(self.realwidth.toFixed(3)+' m')).parentNode);
+        self.log['distance'] = row.appendChild(cE('td').appendChild(cTN(self.realr.toFixed(3)+' m')).parentNode);
+        self.log['mass'] = row.appendChild(cE('td').appendChild(cE('input')).parentNode).firstChild;
+        self.log["mass"].value = self.mass;
+        self.log['mass'].onblur = function(){self.mass = parseFloat(self.log['mass'].value);self.totalmass();self.calculate();self.getscore();}
+        self.log['mass'].style.width = '70px';
+        self.log['totalmass'] = row.appendChild(cE('td').appendChild(cTN(self.mass.toFixed(3)+' kg')).parentNode);
+        self.log['score'] = row.appendChild(cE('td').appendChild(cTN('75%')).parentNode);
+        self.log['score'].style.fontWeight='bold';
+        
+    },
+    totalmass:function(self){
+        var m = self.mass;
+        if (self.mass1)m+=self.mass1.totalmass();
+        if (self.mass2)m+=self.mass2.totalmass();
+        self.log['totalmass'].innerHTML = m.toFixed(3)+' kg';
+        return m;
+    },
+    toppos:function(self){return [self.rect.x+self.r,self.rect.y-15];},
+    settoppos:function(self,[x,y]){
+        self.rect.x = x-self.r;
+        self.rect.y = y+15;
+        if (self.mass1)self.mass1.settoppos(self.m1pos());
+        if (self.mass2)self.mass2.settoppos(self.m2pos());
+    },
+    m1pos:function(self){return [self.rect.x,self.rect.y+15];},
+    m2pos:function(self){return [self.rect.x+self.rect.w,self.rect.y+15];},
+    draw:function(self){
+        if (self.realr<.1 || self.realwidth-self.realr<.1)
+            ctx.rect(self.rect.pts(),[255,0,0]);
+        else
+            ctx.rect(self.rect.pts(),self.color);
+        ctx.line2([self.rect.x,self.rect.y],[0,15],[0,0,0]);
+        ctx.line2([self.rect.x+self.rect.w,self.rect.y],[0,15],[0,0,0]);
+        ctx.line2([self.rect.x+self.r,self.rect.y],[0,-15],[0,0,0]);
+        
+        ctx.circle(self.m1pos(),3,self.mass1?connected:disconnected);
+        ctx.circle(self.m2pos(),3,self.mass2?connected:disconnected);
+        ctx.circle(self.toppos(),3,self.top?connected:disconnected);
+    },
+    getscore:function(self,lev){
+        lev = lev || 1;
+        var masses = [[],[],[],[],[],[]];
+        var rods = [];
+        var score = 0;
+        var heremass = self.mass;
+        if (self.mass1){
+            if (self.mass1._class==Mass)
+                heremass += self.mass1.totalmass();
+            else
+                score += self.mass1.getscore(lev+1);
+        }
+        if (self.mass2){
+            if (self.mass2._class==Mass)
+                heremass += self.mass2.totalmass();
+            else
+                score += self.mass2.getscore(lev+1);
+        }
+        score += heremass*fact(lev);
+        self.log['score'].innerHTML = (75+score).toFixed(2)+'%';
+        return score;
+    },
+    event:function(self,e){
+        if (e.type=="mousedown"){
+            var [x,y] = mousePos(e);
+            if (e.button==2 && self.rect.collidepoint([x,y])){
+                return;
+            }
+            if (dist([x,y],self.toppos())<10){
+                self.moving = 1;
+                self.log['row'].style.backgroundColor = 'rgb(250,255,100)';
+                if (self.top){
+                    if (self.top.mass1==self){
+                        self.top.mass1=false;
+                        self.top.calculate();
+                        self.top = false;
+                    }else if (self.top.mass2==self){
+                        self.top.mass2=false;
+                        self.top.calculate();
+                        self.top = false;
+                    }
+                    self.getscore();
+                }
+                self.top = false;
+                return true;
+            }
+        }else if (e.type=='mousemove'){
+            var [x,y] = mousePos(e);
+            if (self.moving==1){
+                var dx = (x-self.r)-self.rect.x;
+                var dy = (y+15)-self.rect.y;
+                self.rect.x = x-self.r;
+                self.rect.y = y+15;
+                if (self.mass1)self.mass1.settoppos(self.m1pos());
+                if (self.mass2)self.mass2.settoppos(self.m2pos());
+            }
+        }else if (e.type=='mouseup'){
+            if (self.moving){
+                self.moving = false;
+                self.log['row'].style.backgroundColor = 'white';
+                for (var i=0;i<rods.length;i++){if (self.top)break;
+                    var r = rods[i];
+                    if (dist(r.m1pos(),self.toppos())<10 && !r.mass1){
+                        r.mass1 = self;
+                        self.top = r;
+                        r.calculate();
+                        var pos = r.m1pos();
+                        self.settoppos(pos);
+                    }else if (dist(r.m2pos(),self.toppos())<10 && !r.mass2){
+                        r.mass2 = self;
+                        self.top = r;
+                        r.calculate();
+                        var pos = r.m2pos();
+                        self.settoppos(pos);
+                    }
+                }
+            }
+        }
+    },
+    calculate:function(self){
+        var torques = self.mass*(self.realwidth/2);
+        var masses = self.mass;
+        self.totalmass();
+        if (self.mass1)
+            masses += self.mass1.totalmass();
+        if (self.mass2){
+            torques += self.mass2.totalmass()*self.realwidth;
+            masses += self.mass2.totalmass();
+        }
+        self.realr = torques/masses;
+        self.log['distance'].innerHTML = self.realr.toFixed(4)+' m';
+        self.r = self.realr/.3048*25;
+        if (self.top){
+            self.top.calculate();
+            if (self.top.mass1==self)
+                self.settoppos(self.top.m1pos());
+            else if (self.top.mass2==self)
+                self.settoppos(self.top.m2pos());
+        }
+        self.getscore();
+    }
+});
+
+var Mass = Class([],{
+    __init__:function(self,[x,y],width,mass,color){
+        self.rect = Rect(x,y,width,width);
+        self.mass = mass;
+        self.top = false;
+        self.bottom = false;
+        self.color = color;
+        var row = $('masses').appendChild(cE('tr'));
+        row.appendChild(cE('td')).appendChild(colorimg(color));
+        row.appendChild(cE('td')).innerHTML = mass;
+        self.log = row;
+    },
+    btpos:function(self){return [self.rect.x+self.rect.w/2,self.rect.y+self.rect.h];},
+    totalmass:function(self){
+        var m = self.mass;
+        if (self.bottom)
+            m+=self.bottom.totalmass();
+        return m;
+    },
+    toppos:function(self){return [self.rect.x+self.rect.w/2,self.rect.y-15];},
+    settoppos:function(self,[x,y]){
+        self.rect.x = x-self.rect.w/2;
+        self.rect.y = y+15;
+        if (self.bottom)
+            self.bottom.settoppos(self.btpos());
+    },
+    draw:function(self){
+        ctx.rect(self.rect.pts(),self.color);
+        ctx.line2([self.rect.x+self.rect.w/2,self.rect.y],[0,-15],[0,0,0]);
+        ctx.circle(self.toppos(),3,self.top?connected:disconnected);
+        ctx.circle(self.btpos(),3,self.bottom?connected:disconnected);
+    },
+    calculate:function(self){
+        if (self.top)self.top.calculate();
+    },
+    event:function(self,e){
+        if (e.type=="mousedown"){
+            var [x,y] = mousePos(e);
+            if (dist([x,y],self.toppos())<10 || self.rect.collidepoint([x,y])){
+                self.moving = 1;
+                self.log.style.backgroundColor = 'rgb(250,255,100)';
+                if (self.top){
+                    if (self.top.mass1==self){
+                        self.top.mass1=false;
+                        self.top.calculate();
+                        self.top = false;
+                    }else if (self.top.mass2==self){
+                        self.top.mass2=false;
+                        self.top.calculate();
+                        self.top = false;
+                    }else if (self.top.bottom==self){
+                        self.top.bottom = false;
+                        self.top.calculate();
+                        self.top = false;
+                    }
+                }
+                self.top = false;
+                return true;
+            }
+        }else if (e.type=='mousemove'){
+            var pos = mousePos(e);
+            if (self.moving==1){
+                self.settoppos(pos);
+            }
+        }else if (e.type=='mouseup'){
+            if (self.moving){
+                self.moving = false;
+                self.log.style.backgroundColor = 'white';
+                for (var i=0;i<rods.length;i++){if (self.top)break;
+                    var r = rods[i];
+                    if (dist(r.m1pos(),self.toppos())<10 && !r.mass1){
+                        r.mass1 = self;
+                        self.top = r;
+                        r.calculate();
+                        var pos = r.m1pos();
+                        self.settoppos(pos);
+                    }else if (dist(r.m2pos(),self.toppos())<10 && !r.mass2){
+                        r.mass2 = self;
+                        self.top = r;
+                        r.calculate();
+                        var pos = r.m2pos();
+                        self.settoppos(pos);
+                    }
+                }
+                for (var i=0;i<masses.length;i++){if (self.top)break;
+                    var m = masses[i];
+                    if (dist(self.toppos(),m.btpos())<10){
+                        m.bottom = self;
+                        self.top = m;
+                        m.calculate();
+                        self.settoppos(m.btpos());
+                    }
+                }
+            }
+        }
+    }
+});
+
+function events(e){
+    e.preventDefault();
+    for (var i=0;i<masses.length;i++){var m=masses[i];
+        if (m.event(e))return;
+    }
+    for (var i=0;i<rods.length;i++){var r=rods[i];
+        if (r.event(e))return;
+    }
+    return false;
+}
+
+function update(){
+    ctx.fill([255,255,255]);
+    for (var i=0;i<rods.length;i++){var r=rods[i];
+        r.draw();
+    }
+    for (var i=0;i<masses.length;i++){var m=masses[i];
+        m.draw();
+    }
+}
+
+rods.push(Rod([15,40+35*0],4,.091,[255,100,200]));
+rods.push(Rod([15,40+35*1],4,.091,[200,255,100]));
+rods.push(Rod([15,40+35*2],4,.091,[200,100,200]));
+
+rods.push(Rod([15,40+35*3],3,.091,[100,255,100]));
+rods.push(Rod([15,40+35*4],3,.091,[100,100,255]));
+rods.push(Rod([15,40+35*5],3,.091,[100,250,250]));
+
+
+var x = 150;
+var ms = [1,.5,.2,.2,.1,.05,.02,.02,.01]
+for (var i=0;i<ms.length;i++){
+    var m = ms[i];console.log(i);
+    var c = hslToRgb(0.6,.5,i/16+.4);
+    console.log(m,c);
+    masses.push(Mass([x,40],m*20+10,m,c));
+    x += m*20+10+5;
+}
+
+canv.addEventListener('mousedown',events,true);
+canv.addEventListener('mouseup',events,true);
+document.body.addEventListener('mousemove',events,true);
+document.body.addEventListener('contextmenu',function(e){e.preventDefault();return false;},true);
+setInterval(update,100);
+
+
+</script>
+</body>
+</html>

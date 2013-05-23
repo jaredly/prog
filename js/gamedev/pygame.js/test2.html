@@ -1,0 +1,150 @@
+<html>
+<head>
+<title>Pygame.js</title>
+<script src="../include.js"></script>
+</head>
+<body>
+<canvas id='pygame.js'></canvas>
+<canvas id='double' style='visibility:hidden'></canvas>
+<script>
+
+function Surface(id,size){
+    var that = document.getElementById(id);
+    var ctx = that._ctx = that.getContext('2d');
+    that.size = size;
+    that.setAttribute('width',size[0]);
+    that.setAttribute('height',size[1]);
+    that.setSize = function(size){
+        that.size=size;
+        that.setAttribute('width',size[0]);
+        that.setAttribute('height',size[1]);
+    }
+    that.fill = function(color){
+        ctx.fillStyle = rgb2c(color);
+        ctx.fillRect(0,0,that.size[0],that.size[1]);
+    }
+    return that;
+}
+
+var int = parseInt;
+
+function rgb2c([r,g,b]){
+    return 'rgb('+parseInt(r)+','+parseInt(g)+','+parseInt(b)+')';
+}
+
+var pygame = {
+    _screen:Surface('pygame.js',[200,200]),
+    _buff:Surface('double',[200,200]),
+    _events:[],
+    _cpos:[0,0],
+    display:{
+        set_mode:function(size){
+            if (size!=pygame._screen.size){
+                pygame._screen.setSize(size);
+                pygame._buff.setSize(size);
+            }
+            pygame.register(pygame._screen);
+            return pygame._buff;
+        },
+        flip:function(){
+            pygame._screen.fill([255,255,255]);
+            pygame._screen._ctx.drawImage(pygame._buff,0,0);
+        }
+    },
+    draw:{
+        line:function(scr,color,p1,p2,w){
+            scr._ctx.strokeStyle = rgb2c(color);
+            scr._ctx.lineWidth = w||1;
+            scr._ctx.beginPath()
+            scr._ctx.lineTo(int(p1[0]),int(p1[1]));
+            scr._ctx.lineTo(int(p2[0]),int(p2[1]));
+            scr._ctx.stroke();
+        },
+        rect:function(scr,color,[x,y,w,h]){
+            scr._ctx.fillStyle = rgb2c(color);
+            scr._ctx.strokeStyle = '';
+            scr._ctx.fillRect(x,y,w,h);
+        }
+    },
+    event:{
+        get:function(){
+            var tmp = pygame._events;
+            pygame._events = [];
+            return tmp;
+        }
+    },
+    register:function(canv){
+        var cpos = findPos(canv);
+        var addt=function(e){pygame._events.push(e);};
+        var addm=function(e){
+            var ne = {'type':e.type,
+                      'pos' :mousePos(e,cpos),
+                      'button':mouseButton(e)}
+            pygame._events.push(ne);
+        }
+        canv.addEventListener('mouseup',addm,false);
+        canv.addEventListener('mousedown',addm,false);
+        document.addEventListener('mousemove',addm,false);
+        document.addEventListener('keydown',addt,false);
+        document.addEventListener('keyup',addt,false);
+    }
+}
+
+function mousePos(e,cpos) {
+	var posx = 0;
+	var posy = 0;
+	if (!e) var e = window.event;
+	if (e.pageX || e.pageY) 	{
+		posx = e.pageX;
+		posy = e.pageY;
+	}
+	else if (e.clientX || e.clientY) 	{
+		posx = e.clientX + document.body.scrollLeft
+			+ document.documentElement.scrollLeft;
+		posy = e.clientY + document.body.scrollTop
+			+ document.documentElement.scrollTop;
+	}
+	return [posx-cpos[0],posy-cpos[0]]
+}
+
+function mouseButton(e) {
+	var rightclick;
+	if (!e) var e = window.event;
+	if (e.which) rightclick = (e.which == 3);
+	else if (e.button) rightclick = (e.button == 2);
+	return !rightclick
+}
+var down = false;
+function event(){
+    for each(e in pygame.event.get()){
+        if (e.type=='mousemove' && down){
+            pygame.draw.line(scren,[255,0,0],pos,e.pos,2);
+            pos = e.pos;
+        }else if (e.type=='mousedown'){
+            down=true;
+            pos = e.pos;
+        }else if (e.type=='mouseup')down=false;
+    }
+}
+
+function loop(){
+    if (!running)clearInterval(tm);
+    event();
+    pygame.display.flip();
+}
+
+function Paddle(parent,pos,color,side){
+    var that = {parent:parent,pos:pos,color:color,side:side};
+    that.draw = function(screen){
+        pygame.draw.rect(screen,that.color,[pos[0],pos[1],10,40]);
+    }
+}
+
+var running = true;
+var scren = pygame.display.set_mode([800,800]);
+var pos = [100,100];
+var tm = setInterval(loop,10);
+
+</script>
+</body>
+</html>

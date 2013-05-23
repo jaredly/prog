@@ -1,0 +1,118 @@
+<html><body onload="load()">
+<script>
+function SlideShow(speed){
+    this.speed=speed||1
+    this.bgcolor="black"
+    this.i=0;
+    this.imgs=new Array("http://www.gallaugher.com/ian/056%20COW!.jpg",
+"http://whyfiles.org/193prion/images/bse_cow_vert.jpg",
+"http://www.wayodd.com/funny-pictures2/funny-pictures-cow-jumping-aqY.jpg",
+"http://www.archaeologyonline.net/indology/sacred-cow/sacred-cow.jpg")
+
+    for (var ig=0;ig<this.imgs.length;ig++){
+        ni=new Image()
+        ni.src=this.imgs[ig];
+        this.imgs[ig]=ni;
+    }
+    rnd=new Array(circles,smallsquares,bigsquares,fade)
+
+
+    if (!document.getElementById("canv")){
+        this.c=document.body.appendChild(document.createElement("canvas"));
+        this.c.id="canv"
+        this.c.height=500
+        this.c.width=500
+        this.ctx=this.c.getContext('2d');
+        this.ctx.fillStyle="black"
+    }
+    this.fade=fade
+    this.draw_image=draw_image
+    function draw_image(img){
+        img=this.imgs[img]
+        this.ctx.fillStyle=this.bgcolor;
+        this.ctx.fillRect(0,0,this.c.offsetWidth,this.c.offsetHeight);
+        this.ctx.drawImage(img,this.c.offsetWidth/2-img.width/2, this.c.offsetHeight/2-img.height/2)
+    }
+
+    
+    this.img=1
+    this.draw_image(0)
+
+    function fade(i){
+        old=this.img?(this.img-1):(this.imgs.length-1)
+        this.ctx.globalAlpha=1.0;
+        
+        this.draw_image(old)
+        this.ctx.globalAlpha=i/20.0;
+        this.draw_image(this.img)
+    }
+
+    function circles(i){
+        this.ctx.beginPath()
+        for (var e=0;e<20;e++){
+            for (var b=0;b<20;b++){
+                this.ctx.moveTo(e*20,b*20);
+                this.ctx.arc(e*20,b*20,i,0,Math.PI*2, 0);
+            }
+        }
+        this.ctx.clip()
+        this.ctx.drawImage(this.imgs[this.img],0,0,300,300);
+    }
+
+    function square(x,y,wh){
+        ctx.moveTo(x-wh,y-wh)
+        ctx.lineTo(x+wh,y-wh)
+        ctx.lineTo(x+wh,y+wh)
+        ctx.lineTo(x-wh,y+wh)
+    }
+
+    function squares(x,y,i){
+        ctx.beginPath()
+        for (var e=0;e<x;e++){
+            for (var b=0;b<y;b++){
+                //ctx.moveTo(e*x,b*y);
+                square(e*(300/x)+150/x,b*(300/y)+150/y,i*(10/x))
+            }
+        }
+        ctx.clip()
+        ctx.drawImage(im,0,0,400,400);
+    }
+    function smallsquares(i){squares(20,20,i)}
+    function bigsquares(i){squares(5,5,i)}
+
+    clipfunc=fade
+    old=null;
+    this.start=start
+    function start(){
+        show=this;setTimeout(function(){show.draw()},this.speed*1000)
+    }
+    this.draw=draw
+    function draw(){//console.log(this)
+        this.fade(this.i)
+        this.i+=1;
+        if (this.i>20){
+            //this.ctx.globalAlpha=1.0;
+            //this.ctx.drawImage(this.imgs[this.img],0,0,300,300);
+            this.img+=1
+            if (this.img==this.imgs.length){this.img=0}
+            this.i=0
+            setTimeout(function(){e.draw()},this.speed*1000);
+            return
+        }
+        show=this;
+        setTimeout(function(){show.draw()},50);
+    }
+}
+e=null;
+function load(){
+e=new SlideShow(3)
+e.start()
+}
+
+function SlideView(show){
+    this.show=show;
+    this.display=display;
+    function display(){}
+}
+</script></body>
+</html>

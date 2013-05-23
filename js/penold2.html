@@ -1,0 +1,136 @@
+<html>
+<body><canvas id='canv' width=600 height=600></canvas>
+
+<script>
+
+var g = -9.8;
+
+function circle(x,y,r,color){
+    ctx.fillStyle = color;
+    ctx.beginPath()
+    ctx.arc(x,y,r,0,Math.PI*2,true);
+    ctx.fill()
+}
+function line(x,y,a,b,color){
+    ctx.strokeStyle=color;
+    ctx.beginPath();
+    ctx.moveTo(x,y);
+    ctx.lineTo(a,b);
+    ctx.stroke();
+}
+function rect(x,y,w,h,color){
+    ctx.fillStyle=color;
+    ctx.fillRect(x,y,w,h);
+}
+
+function torque(){
+    return m*Math.sin(theta);
+}
+
+function torque2(){
+    return m2*Math.sin(theta2);
+}
+
+function torque3(){
+    return m3*Math.sin(theta3);
+}
+
+function AddVectors(v,t,v2,t2){
+    vx = v*Math.cos(t);
+    vy = v*Math.sin(t);
+    vx += v2*Math.cos(t2);
+    vy += v2*Math.sin(t2);
+    return [Math.sqrt(vx*vx+vy*vy),Math.atan(vy/vx)];
+}
+
+function sq(x){return x*x;}
+
+function Pendulum(parent,length,mass,angle){
+    var that = {};
+    that.type="pendulum";
+    that.mass = mass;
+    that.length = length;
+    that.theta = angle;
+    that.parent = parent;
+    that.parent.child = that;
+    that.speed = 0;
+    
+   /* that.accell = function(){
+        return -g/that.length*Math.sin(that.theta);
+    }
+    */
+    that.accell = function(){
+        if (that.child){
+        
+  /*       %u2212g (2 m1 + m2) sin %u03B81 %u2212 m2 g sin(%u03B81 %u2212 2 %u03B82) %u2212 2 sin(%u03B81 %u2212 %u03B82) m2 (%u03B82'2 L2 + %u03B81'2 L1 cos(%u03B81 %u2212 %u03B82))
+L1 (2 m1 + m2 %u2212 m2 cos(2 %u03B81 %u2212 2 %u03B82))
+    */    
+            return (-g*(2*that.mass + that.child.mass)*Math.sin(that.theta) - that.child.mass*g*Math.sin(that.theta - 2*that.child.theta) - 2*Math.sin(that.theta-that.child.theta)*that.child.mass*(sq(that.child.speed)*that.child.length + sq(that.theta)*that.length * Math.cos(that.theta - that.child.theta)))/(that.length*(2*that.mass+that.child.mass - that.child.mass*Math.cos(2*that.theta-2*that.child.theta)))
+        }else if (that.parent.type=="pendulum"){
+          /*   2 sin(%u03B81 %u2212 %u03B82) (%u03B81'2 L1 (m1 + m2) + g(m1 + m2) cos %u03B81 + %u03B82'2 L2 m2 cos(%u03B81 %u2212 %u03B82))
+L2 (2 m1 + m2 %u2212 m2 cos(2 %u03B81 %u2212 2 %u03B82))*/
+            return (2*Math.sin(that.parent.theta-that.theta)* (sq(that.parent.speed)*that.parent.length* (that.parent.mass+that.mass) + g*(that.parent.mass+that.mass)*Math.cos(that.parent.theta+sq(that.speed)* that.length*that.mass*Math.cos(that.parent.theta-that.theta)) / ( that.length * (2*that.parent.mass + that.mass-that.mass*Math.cos(2*that.parent.theta-2*that.theta)))))
+        }
+        return -g/that.length*Math.sin(that.theta);
+    }
+    
+    that.center = function(){
+        if (that.parent.type=="pendulum"){
+            return [that.parent.x,that.parent.y];
+        }else{return that.parent;}
+    }
+    that.step = function(){
+        that.speed += that.accell();
+        that.theta += 2*Math.atan(that.speed/2/that.length);
+        var center = that.center();
+        that.x = center[0] + that.length*Math.cos(that.theta+Math.PI/2);
+        that.y = center[1] - that.length*Math.sin(that.theta+Math.PI/2);
+    }
+    that.line = function(){
+        var [x,y]=that.center();
+        line(x,y,that.x,that.y,'red');
+    }
+    that.circle = function(){
+        circle(that.x,that.y,that.mass,'green');
+    }
+    return that;
+}
+
+var pds = [];
+
+function lines(){
+    for (var i=0;i<pds.length;i++){
+        pds[i].line();
+    }
+}
+function circles(){
+    for (var i=0;i<pds.length;i++){
+        pds[i].circle();
+    }
+}
+function steps(){
+    for (var i=0;i<pds.length;i++){
+        pds[i].step();
+    }
+}
+
+var ctx = document.getElementById('canv').getContext('2d')
+
+pds.push(Pendulum([300,300],100,15,Math.PI/9));
+pds.push(Pendulum(pds[0],100,15,Math.PI/2));
+// pds.push(Pendulum(pds[1],100,5,Math.PI/3));
+
+function step(){
+    ctx.clearRect(0,0,600,600);
+    steps();
+    lines();
+    circles();
+    setTimeout(step,20);
+}
+
+step()
+
+
+</script>
+
+</body></html>

@@ -1,0 +1,158 @@
+<html>
+<head>
+    <title>Thing</title>
+    <script src="/prog/js/lib/dom.inc.js"></script>
+    <script src="/prog/js/lib/math.inc.js"></script>
+    <script src="/prog/js/lib/canvas.inc.js"></script>
+</head>
+<body>
+
+<script>
+
+function poc([cx,cy],r,t){
+    return [cx+r*Math.cos(t), cy+r*Math.sin(t)];
+}
+
+function chord(cn,r,ti,tf,c){
+    return [poc(cn,r,ti), poc(cn,r,tf),c];
+}
+
+function draw_chord(ctx,cn,r,ti,tf){
+    var [p1,p2] = chord(cn,r,ti,tf);
+    //console.log(p1,p2);
+    ctx.beginPath();
+    ctx.moveTo(int(p1[0]),int(p1[1]));
+    ctx.lineTo(int(p2[0]),int(p2[1]));
+    ctx.stroke();
+}
+
+function draw_line(ctx,p1,p2){
+    ctx.beginPath();try{
+    ctx.moveTo(int(p1[0]),int(p1[1]));
+    ctx.lineTo(int(p2[0]),int(p2[1]));}catch(e){console.log(e);}
+    ctx.stroke();
+}
+
+var canv = document.body.appendChild(cE("canvas"));
+canv.height = 800;
+canv.width = 800;
+var ctx = canv.getContext("2d");
+
+var num = 41;
+    
+    var lines = [];
+    var lpos = 0;
+    var dir = 1;
+    
+    
+    
+    function calcpos(t1,m1,t2,m2,[x,y]){
+        var pz = Vector(t1,m1).add(Vector(t2,m2)).pos();
+        return [pz[0]+x,pz[1]+y];
+    }
+    
+    function calcposes(){
+        //var poses = [];
+        var t1 = 0;
+        var m1 = 50;
+        var s1 = Math.PI/200;
+        var t2 = 0;
+        var m2 = 40;
+        var s2 = Math.PI/50.2;
+        var c = [100,100];
+        var last = calcpos(t1,m1,t2,m2,c);
+        for (var t=0;t<1000;t++){
+            t1+=s1;
+            t2+=s2;
+            var newz = calcpos(t1,m1,t2,m2,c)
+            lines.push([last,newz]);
+            last=newz;
+        }
+    }
+    //thing2();
+    
+    
+    
+    function drawSpirograph(ctx,R,r,O){
+        var x1 = R-O;
+        var y1 = 0;
+        var i  = 1;
+        ctx.beginPath();
+        ctx.moveTo(x1,y1);
+        do {
+            if (i>20000) break;
+            var x2 = (R+r)*Math.cos(i*Math.PI/72) - (r+O)*Math.cos(((R+r)/r)*(i*Math.PI/72))
+            var y2 = (R+r)*Math.sin(i*Math.PI/72) - (r+O)*Math.sin(((R+r)/r)*(i*Math.PI/72))
+            ctx.lineTo(x2,y2);
+            x1 = x2;
+            y1 = y2;
+            i++;
+        } while (x2 != R-O && y2 != 0 );
+        ctx.stroke();
+    }
+
+    
+    function make_spirograph(R,r,O){
+        var x1 = R-O;
+        var y1 = 0;
+        var i  = 1;
+        var pts = [];
+        var old = [[x1+400,y1+400]];
+        do {
+            if (i>20000) break;
+            var x2 = (R+r)*Math.cos(i*Math.PI/72) - (r+O)*Math.cos(((R+r)/r)*(i*Math.PI/72))
+            var y2 = (R+r)*Math.sin(i*Math.PI/72) - (r+O)*Math.sin(((R+r)/r)*(i*Math.PI/72))
+            pts.push([old,[x2+400,y2+400]]);
+            old = [x2+400,y2+400];
+            x1 = x2;
+            y1 = y2;
+            i++;
+        } while (x2 != R-O && y2 != 0 );
+        return pts;
+    }
+    
+    
+    lines = make_spirograph(10,50,5);
+    var i=0;
+    var g = Game(canv,[800,800]);
+    g.r = 0;
+    g.ctx.translate(400,400);
+    g.ctx.globalAlpha = 0.5;
+    g.step = function(){
+    }
+    g.draw = function(){
+        i+=Math.PI/500;//1
+        g.ctx.clearRect(-400,-400,800,800);
+        drawSpirograph(g.ctx,Math.sin(i)*25,Math.cos(i)*50,50);
+        
+        //g.ctx.strokeStyle = lines[lpos][2];
+        
+        
+        
+        //draw_line(g.ctx,lines[lpos][0],lines[lpos][1]);
+        //lpos+=dir;
+        
+        
+        /*if (lpos>=lines.length || lpos<0){
+            
+            dir*=-1;
+            if (dir==1){
+                g.ctx.strokeStyle = "black";
+                g.ctx.lineWidth = 1;
+            }
+            else{
+                g.ctx.strokeStyle = "white";
+                g.ctx.lineWidth = 2;
+            }
+            //g.ctx.strokeStyle = ["black","white"][dir==1 && 0 || 1];
+            lpos+=dir;
+        }*/
+
+    }
+
+    g.fps = 40;
+    g.run()
+
+</script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<html>
+<head>
+    <title>Gradient Creator</title>
+</head>
+<body>
+<!--
+created: Sat Apr 28 16:17:58 2007 
+by: Jared Forsyth
+edited: 06/15/08
+edited: 08/08/08
+-->
+<style>
+
+#main {
+    background-color:lightblue;
+    border:2px solid blue;
+    margin: 30px auto;
+    width: 400px;
+    padding: 10px;
+    text-align: center;
+}
+
+#out {
+    margin-top:20px;
+    margin-bottom: 10px;
+}
+
+#main h2 {
+    margin-top:0px;
+}
+
+</style>
+<div id="main">
+    <h2>Gradient Creator</h2>
+    <form>
+    <table>
+    <tr><td>Top Color:</td><td><input id="c1" value="255,255,255"/></td></tr>
+    <tr><td>Bottom Color:</td><td><input id="c2" value="0,0,0"/></td></tr>
+    <tr><td>Width:</td><td><input id="w" value="200"/></td></tr>
+    <tr><td>Height:</td><td><input id="h" value="100"/></td></tr>
+    </table>
+    <button>Generate</button>
+    </form>
+    <canvas id="canv" width="200" height="100" style="position:absolute;visibility:hidden"></canvas>
+    <img id="out"/>
+</div>
+
+
+<script src="gradient.js"></script>
+<script>
+function $(e){return document.getElementById(e);}
+
+function update(){
+    var c1 = $('c1').value;
+    var c2 = $('c2').value;
+    c1 = c1[0]=='#'?c1:c1.split(',').length==3?'rgb('+c1+')':'rgba('+c1+')';
+    c2 = c2[0]=='#'?c2:c2.split(',').length==3?'rgb('+c2+')':'rgba('+c2+')';
+    var w = parseInt($('w').value);
+    var h = parseInt($('h').value);
+    var c = $('canv');
+    c.width = w;
+    c.height = h;
+    gradient(c.getContext('2d'),0,0,w,h,c1,c2,1);
+    var i = $('out');
+    i.width = w;
+    i.height = h;
+    i.src = c.toDataURL();
+}
+
+for each(inp in document.getElementsByTagName("input")){
+    inp.onblur = update;
+}
+
+update()
+
+
+
+
+function start(){
+GET={};
+data=(document.location+"?").split('?',2)[1].split('&')
+for (var i=0;i<data.length;i++){
+    item=data[i].split('=')
+    GET[item[0]]=unescape(item[1])
+}
+
+canv=document.createElement("canvas");
+canv.width=parseInt(GET["width"]||'200')
+canv.height=parseInt(GET["height"]||'100')
+//document.body.appendChild(canv)
+ctx=canv.getContext('2d');
+
+if (GET['color1']){
+    if (GET['color1'][0]=='#')color1 = GET['color1'];//Hex2RGB(GET['color1']);
+    else color1 = GET['color1'].split(',');
+}else
+    color1 = [0,0,255];
+    
+if (GET['color2']){
+    if (GET['color2'][0]=='#')color2 = Hex2RGB(GET['color2']);
+    else color2 = GET['color2'].split(',');
+}else
+    color2 = [0,255,0];
+
+//color1=GET['color1']!=null?GET['color1'].split(','):new Array(0,0,255)
+//color2=GET['color2']!=null?GET['color2'].split(','):new Array(0,255,0)
+
+gradient(ctx,0,0,parseInt(GET["width"]||'200'),parseInt(GET["height"]||'100'),color1,color2,parseInt(GET["dir"]||'1'));
+makeIm()
+}
+function makeIm(){
+i=new Image()
+i.style.position="absolute"
+i.style.top=0
+i.style.left=0
+i.src=canv.toDataURL()
+document.body.appendChild(i)
+}
+</script>
+</body></html>

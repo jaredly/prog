@@ -1,0 +1,120 @@
+<html>
+<body><canvas id='canv' width=600 height=600></canvas>
+
+<script>
+
+var g = -9.8;
+
+function circle(x,y,r,color){
+    ctx.fillStyle = color;
+    ctx.beginPath()
+    ctx.arc(x,y,r,0,Math.PI*2,true);
+    ctx.fill()
+}
+function line(x,y,a,b,color){
+    ctx.strokeStyle=color;
+    ctx.beginPath();
+    ctx.moveTo(x,y);
+    ctx.lineTo(a,b);
+    ctx.stroke();
+}
+function rect(x,y,w,h,color){
+    ctx.fillStyle=color;
+    ctx.fillRect(x,y,w,h);
+}
+function AddVectors(v,t,v2,t2){
+    vx = v*Math.cos(t);
+    vy = v*Math.sin(t);
+    vx += v2*Math.cos(t2);
+    vy += v2*Math.sin(t2);
+    return [Math.sqrt(vx*vx+vy*vy),Math.atan(vy/vx)];
+}
+
+function sq(x){return x*x;}
+
+function Planet(x,y,mass,vector){
+    var that = [];
+    that.x = x;
+    that.y = y;
+    that.mass = mass;
+    //that.vector = vector || [0,0];
+    that.speed = vector || [0,0];
+    
+    that.calc = function(){
+        //var [v,t];
+        var rvx = 0;
+        var rvy = 0;
+        
+        for (var i=0;i<planets.length;i++){
+            if (planets[i]==that) continue;
+            var theta = Math.atan((that.x-planets[i].x)/(that.y-planets[i].y));
+            var leng = Math.sqrt(sq(that.x-planets[i].x) + sq(that.y-planets[i].y));
+            var force = (that.mass*planets[i].mass)/sq(leng);
+        //    console.log(theta,force);
+            rvx += force/that.mass*Math.cos(theta);
+            rvy += force/that.mass*Math.sin(theta);
+            //that.vector = AddVectors(v,t,theta,force/that.mass);
+        }
+        //console.log(that.speed,rvx,rvy)
+/*        if (rvx&&rvy)
+            that.speed = AddVectors(that.speed[0],that.speed[1], 
+            Math.atan(rvx/rvy),Math.sqrt(sq(rvx)+sq(rvy)));*/
+        //console.log(that.speed)
+        //that.vector = 
+        that.speed = [rvx,rvy];
+        //that.x += rvx;//that.speed[0]*Math.cos(that.speed[1])
+        //that.y += rvy;//that.speed[0]*Math.sin(that.speed[1])
+    }
+    that.draw = function(){
+        that.x+=that.speed[0];
+        that.y+=that.speed[1];
+        circle(that.x,that.y,10,"green");
+    }
+    return that;
+}
+
+
+
+var planets = [];
+
+function lines(){
+    for (var i=0;i<planets.length;i++){
+        pds[i].line();
+    }
+}
+function circles(){
+    for (var i=0;i<planets.length;i++){
+        planets[i].draw();
+    }
+}
+function steps(){
+    for (var i=0;i<planets.length;i++){
+        pds[i].step();
+    }
+}
+function calcs(){
+    for (var i=0;i<planets.length;i++){
+        planets[i].calc();
+    }
+}
+
+var ctx = document.getElementById('canv').getContext('2d')
+
+planets.push(Planet(100,100,10000));
+planets.push(Planet(200,300,10000));
+
+function step(){
+    ctx.clearRect(0,0,600,600);
+    calcs();
+    //steps();
+    //lines();
+    circles();
+    setTimeout(step,20);
+}
+
+step()
+
+
+</script>
+
+</body></html>

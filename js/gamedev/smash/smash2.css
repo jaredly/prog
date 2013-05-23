@@ -1,0 +1,14 @@
+#smashboxes{
+    width:300px;
+    height:300px;
+    background-color: white;
+    border: 1px solid #000;
+}
+div.player{
+    width: 10px;
+    height: 20px;
+    position:absolute;
+}
+div.properties{
+    background-color:grey;
+}

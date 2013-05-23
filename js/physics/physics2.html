@@ -1,0 +1,215 @@
+<html>
+<head>
+<title>Pandora</title>
+<script src="include.js"></script>
+<script src='classy_js.js'></script>
+</head>
+<body>
+<canvas id='pygame.js'></canvas>
+<canvas id='double' style='visibility:hidden'></canvas>
+<script src="pygame.js/pygame.js"></script>
+<div id='rods'></div>
+
+<script>
+var Rect = Class([],{
+    __init__:function(self,x,y,w,h){
+        self.x=x;
+        self.y=y;
+        self.w=w;
+        self.h=h;
+    },
+    colliderect:function(self,other){
+        var xs,ys;
+        if (self.x<other.x) xs = (other.x-self.x)<self.w;
+        else xs = (self.x-other.x)<other.w;
+        if (self.y<other.y) ys = (other.y-self.y)<self.h;
+        else ys = (self.y-other.y)<other.h;
+        return xs && ys;
+    },
+    collidepoint:function(self,[x,y]){
+        return (self.x<=x && x<=self.x+self.w && self.y<=y && y<=self.y+self.h);
+    },
+    pts:function(self){
+        return [self.x,self.y,self.w,self.h];
+    },
+    move:function(self,[x,y]){
+        return Rect(self.x+x,self.y+y,self.w,self.h);
+    },
+    move_ip:function(self,[x,y]){
+        self.x+=x;
+        self.y+=y;
+    }
+});
+
+var Sprite = Class([],{
+    __init__:function(self){
+        self.rect = Rect(0,0,0,0);
+    },
+    step:function(self){},
+    event:function(self){},
+    draw:function(self,scr){}
+});
+
+var Bird = Class([Sprite],{
+    draw:function(self,screen){//console.log(screen);
+    screen._ctx.globalAlpha = 0.5;
+        pygame.draw.circle(screen,self.color,self.pos,self.size);
+    screen._ctx.globalAlpha = 0.05;
+    },
+    rect:function(self){
+        var [x,y] = self.pos;
+        return Rect(x-10,y-10,20,20);
+    },
+    event:function(self,e){
+        if (e.type=='keydown'){
+            if (e.keyCode == 37)self.dx = -2;
+            if (e.keyCode == 39)self.dx = 2;
+            if (e.keyCode == 38){
+                if (self.gravity==0)
+                    self.dy = -4;
+            }
+        }else if (e.type=='keyup'){
+            if (e.keyCode == 37 && self.dx==-2)self.dx = 0;
+            if (e.keyCode == 39 && self.dx==2)self.dx = 0;
+        }
+    }
+});
+
+var Rod = Class([Sprite],{
+    __init__:function(self,parent,x,y,w,m){
+        self.parent=parent;
+        self.rect = Rect(x,y,w*25,5);
+        self.w = w;
+        self.m = m;
+        self.moving = false;
+        self.mass1 = false;
+        self.mass2 = false;
+        self.r = w/2;
+        self.log = document.body.appendChild(document.createElement('div'));
+    },
+    getmass:function(self){
+        return self.m+(self.mass1?self.mass1.getmass():0)+(self.mass2?self.mass2.getmass():0);
+    },
+    draw:function(self,screen){
+        pygame.draw.rect(screen,[0,0,255],self.rect.pts());
+        pygame.draw.line(screen,[0,0,0],[self.rect.x,self.rect.y],[self.rect.x,self.rect.y+15]);
+        pygame.draw.line(screen,[0,0,0],[self.rect.x+self.r*25,self.rect.y],[self.rect.x+self.r*25,self.rect.y-15]);
+        pygame.draw.line(screen,[0,0,0],[self.rect.x+self.rect.w,self.rect.y],[self.rect.x+self.rect.w,self.rect.y+15]);
+        pygame.draw.circle(screen,[50,50,255],[self.rect.x,self.rect.y+15],3);
+        pygame.draw.circle(screen,[50,50,255],[self.rect.x+self.rect.w,self.rect.y+15],3);
+        pygame.draw.circle(screen,[50,50,255],[self.rect.x+self.r*25,self.rect.y-15],3);
+    },
+    m1p:function(self){
+        return [self.rect.x,self.rect.y+15];
+    },
+    m2p:function(self){
+        return [self.rect.x+self.rect.w,self.rect.y+15];
+    },
+    event:function(self,e){
+        if (e.type=='mousedown'){
+            if (self.rect.collidepoint(e.pos))
+                self.moving = e.pos;
+        }else if (e.type=='mouseup'){
+            self.moving = false;
+            
+        }
+        else if (e.type=='mousemove'){
+            if (self.moving){
+                var [a,b] = self.moving;
+                var [x,y] = e.pos;
+                self.rect.move_ip([x-a,y-b]);
+                self.moving = e.pos;
+            }
+        }
+    },
+    calculate:function(self){
+        var m1 = self.mass1?self.mass1.getmass():0;
+        var m2 = self.mass2?self.mass2.getmass():0;
+        var L = self.w*0.3048;
+        
+        self.r = (L*m2 + self.m*(L/2))/(m1+m2+self.m);
+        self.log.innerHTML = "R: "+self.r+" m<br>Mass1: "+m1+"<br/>Mass2: "+m2;
+    }
+});
+
+var Mass = Class([Sprite],{
+    __init__:function(self,parent,x,y,w,m){
+        self.rect = Rect(x,y,w,w);
+        self.m = m;
+        self.top = false;
+        self.bottom = false;
+        self.moving = false;
+        self.parent = parent;
+    },
+    event:function(self,e){
+        if (e.type=='mousedown'){
+            if (self.rect.collidepoint(e.pos)){
+                self.moving = e.pos;
+                if (self.top){
+                    if (self==self.top.mass1)self.top.mass1 = false;
+                    if (self==self.top.mass2)self.top.mass2 = false;
+                    self.top.calculate();
+                    self.top = false;
+                }
+            }
+        }else if (e.type=='mouseup'){
+            self.moving = false;
+            for (var i=0;i<self.parent.objects.length;i++){
+                var o = self.parent.objects[i];
+                if (o._class==Rod){
+                    if (dist([self.rect.x+self.rect.w/2,self.rect.y-15],o.m1p())<10){
+                        o.mass1 = self;
+                        o.calculate();
+                        var [a,b] = o.m1p();
+                        self.rect.x = a-self.rect.w/2;
+                        self.rect.y = b+15;
+                        break;
+                    }
+                    else if (dist([self.rect.x+self.rect.w/2,self.rect.y-15],o.m2p())<10){
+                        o.mass2 = self;
+                        o.calculate();
+                        self.top = o;
+                        var [a,b] = o.m2p();
+                        self.rect.x = a-self.rect.w/2;
+                        self.rect.y = b+15;
+                        break;
+                    }
+                }
+            }
+        }
+        else if (e.type=='mousemove'){
+            if (self.moving){
+                var [a,b] = self.moving;
+                var [x,y] = e.pos;
+                self.rect.move_ip([x-a,y-b]);
+                self.moving = e.pos;
+            }
+        }
+    },
+    draw:function(self,screen){
+        pygame.draw.line(screen,[0,0,0],[self.rect.x+self.rect.w/2,self.rect.y],[self.rect.x+self.rect.w/2,self.rect.y-15]);
+        pygame.draw.rect(screen,[0,255,0],self.rect.pts());
+        pygame.draw.circle(screen,[50,50,255],[self.rect.x+self.rect.w/2,self.rect.y-15],3);
+    },
+    getmass:function(self){
+        return self.m+(self.bottom?self.bottom.getmass():0);
+    }
+});
+
+function dist([x,y],[a,b]){
+    return Math.sqrt((a-x)*(a-x)+(b-y)*(b-y));
+}
+
+pygame.double_buff = false;
+var gm = Game([500,500]);
+gm.objects.push(Rod(gm,10,20,5,.091));
+var x = 10;
+for each(w in [1,.5,.2,.2,.1,.05,.02,.02,.01]){
+    gm.objects.push(Mass(gm,x,60,40*w,w));
+    x += 40*w + 5;
+}
+//gm.objects.push(Mass(gm,10,50,40,1));
+//gm.objects.push(Mass(gm,45,50,10,1));
+gm.loop();
+</script>
+</body>

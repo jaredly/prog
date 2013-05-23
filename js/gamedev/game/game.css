@@ -1,0 +1,8 @@
+.sprite {
+    position: absolute;
+}
+.screen {
+    background-color: lightBlue;
+    width: 50%;
+    height: 50%
+}

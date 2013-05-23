@@ -1,0 +1,33 @@
+textarea {
+    width:100%;
+    height:70%;
+}
+body {
+    background-color: lightgrey;
+}
+button {
+    background-color: #444444;
+    border: 2px solid black;
+}
+span.string {
+    color:green;
+}
+span.tab {
+    margin-left:20px;
+    margin-right:10px;
+}
+span.this {
+    color:darkgreen;
+    font-weight:bold;
+}
+span.href {
+    color:black;
+}
+span.function {
+    color: darkblue;
+    font-weight:bold;
+}
+span.funcname {
+    color: blue;
+}
+span.vername {color:greyt;}

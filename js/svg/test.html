@@ -1,0 +1,281 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+</head>
+<body style="margin:0px;">
+
+<script>
+
+var svgNamespace = 'http://www.w3.org/2000/svg';
+function createSVG(thing){
+    return document.createElementNS(svgNamespace, thing);
+}
+function set(a,x,y){
+    a.setAttribute(x,y);
+}
+var main = document.body.appendChild(createSVG("svg"));
+
+/*var rect = main.appendChild(createSVG("rect"));
+set(rect,"x",30);
+set(rect,"y",30);
+set(rect,"width",20);
+set(rect,"height",20);
+
+set(rect,"fill","red");
+set(rect,"stroke","black");
+set(rect,"stroke-width",15);
+
+var path = main.appendChild(createSVG("path"));
+set(path,"stroke","black");
+set(path,"fill","none");
+set(path,"d","M0,0 C80,0 80,80 160,80")
+*/
+
+function array(x){
+    var that=[];
+    for (var i=0;i<x.length;i++)that.push(x[i]);
+    return that;
+}
+
+
+function ePos(e){
+    if (e.pageX)return [e.pageX,e.pageY];
+    return [e.clientX + document.body.scrollLeft - document.body.clientLeft,
+        e.clientY + document.body.scrollTop  - document.body.clientTop]
+}
+
+// Path
+
+function Path(parent,stroke,width,fill,log){
+    var that = {};
+    that.node = parent.appendChild(createSVG("path"));
+    that.logs = [];
+    set(that.node,"stroke",stroke||"black");
+    set(that.node,"stroke-width",width);
+    set(that.node,"fill",fill||"none");
+    that.segs = [];
+    var prev = [];
+    that.addSeg = function(seg){
+        that.segs.push(seg);
+        that.update();
+        if (!log){
+            if (seg.type=="M"){
+                seg.logs.push(Dot(parent,seg[0],seg[1],"blue","white",width));
+                prev = [seg[0],seg[1]];
+            }
+            if (seg.type=="L"){
+                seg.logs.push(Dot(parent,seg[0],seg[1],"blue","white",width));
+                prev = [seg[0],seg[1]];
+            }
+            if (seg.type=="C"){
+                seg.logs.push(Line(parent,prev[0],prev[1],seg[0],seg[1],"lightblue"));
+                seg.logs.push(Dot(parent,seg[0],seg[1],"red","white",width));
+                seg.logs.push(Line(parent,seg[2],seg[3],seg[4],seg[5],"lightblue"));
+                seg.logs.push(Dot(parent,seg[2],seg[3],"red","white",width));
+                seg.logs.push(Dot(parent,seg[4],seg[5],"blue","white",width));
+                prev = seg[4],seg[5];
+            }
+        }
+    }
+    that.update = function(){
+        var text = "";
+        for (var i=0;i<that.segs.length;i++){
+            text+=that.segs[i].type;
+            for (var o=0;o<that.segs[i].length;o++){
+                text+=that.segs[i][o]+" ";
+            }
+        }
+        // console.log(text);
+        set(that.node,"d",text);
+    }
+    return that;
+}
+function Seg(type){
+    var that = array(arguments).slice(1);
+    that.type=type;
+    that.logs = [];
+    return that;
+}
+
+// Circle
+
+function Circle(parent,cx,cy,r,stroke,strokewidth,fill){
+    var that = parent.appendChild(createSVG("ellipse"));
+    set(that,"cx",cx);
+    set(that,"cy",cy);
+    set(that,"rx",r);
+    set(that,"ry",r);
+    set(that,"stroke",stroke||"black");
+    set(that,"stroke-width",strokewidth||1);
+    set(that,"fill",fill||"white");
+    that.setPos = function(x,y){
+        set(that,"cx",x);
+        set(that,"cy",y);
+    }
+    return that;
+}
+
+// Dot
+
+function Dot(parent,x,y,color,fill,width){
+    return Circle(parent,x,y,width||4,color||"black",width||4,fill||"white");
+}
+
+// Line
+
+function Line(parent,x1,y1,x2,y2,stroke,strokewidth){
+    if ([x1,y1,x2,y2].indexOf(null)!=-1){
+        throw "Sorry, you need to enter the parent,x1,y1,x2,y2 arguments";
+    }
+    var that = parent.appendChild(createSVG("line"));
+    set(that,"stroke",stroke||"black");
+    set(that,"stroke-width",strokewidth||1);
+    set(that,"x1",x1);
+    set(that,"x2",x2);
+    set(that,"y1",y1);
+    set(that,"y2",y2);
+    that.set1=function(x,y){
+        set(that,'x1',x)
+        set(that,'y1',y);
+    }
+    that.set2=function(x,y){
+        set(that,'x2',x)
+        set(that,'y2',y);
+    }
+    return that;
+}
+
+// Bez
+
+function Cubic(parent,x,y,a,b,c,d,e,f,width){
+    var that = parent.appendChild(createSVG("path"));
+    that.x=x;that.y=y;that.a=a;that.b=b;that.c=c;that.dd=d;that.e=e;that.f=f;
+    set(that,"fill","none");
+    set(that,"stroke","black");
+    set(that,"stroke-width",width||2);
+    set(that,"style","cursor:pointer");
+    var l1 = Line(parent,x,y,a,b,"lightblue");
+    var l2 = Line(parent,c,d,e,f,"lightblue");
+    function update(){
+        var g="M"+that.x+' '+that.y+' C'+that.a+' '+that.b+' '+that.c+' '+that.dd+' '+that.e+' '+that.f;
+        set(that,"d",g);
+        l1.set1(that.x,that.y);l1.set2(that.a,that.b);
+        l2.set1(that.c,that.dd);l2.set2(that.e,that.f);
+        udots();
+    }
+    function udots(){
+        set(p1,'cx',that.x);
+        set(p1,'cy',that.y);
+        set(p2,'cx',that.a);
+        set(p2,'cy',that.b);
+        set(p3,'cx',that.c);
+        set(p3,'cy',that.dd);
+        set(p4,'cx',that.e);
+        set(p4,'cy',that.f);
+    }
+    that.hide=function(){
+        set(p1,"visibility","hidden");
+        set(p2,"visibility","hidden");
+        set(p3,"visibility","hidden");
+        set(p4,"visibility","hidden");
+        set(l1,"visibility","hidden");
+        set(l2,"visibility","hidden");
+    }
+    that.show = function(){
+        set(p1,"visibility","visible");
+        set(p2,"visibility","visible");
+        set(p3,"visibility","visible");
+        set(p4,"visibility","visible");
+        set(l1,"visibility","visible");
+        set(l2,"visibility","visible");
+    }
+    that.addEventListener("click",that.show,false);
+    that.addEventListener("mousedown",function(e){moving=4;past=ePos(e);},false);
+    parent.addEventListener("mousedown",that.hide,false);
+    var moves = [];
+    var past = [0,0];
+    var moving = null;
+    var p1 = Dot(parent,x,y,"red");
+    set(p1,"style","cursor:pointer");
+    p1.addEventListener("mousedown", function(e){moving=0;e.stopPropagation();},false)
+    moves.push(function(e){
+        var [x,y] = ePos(e);
+        that.a-=that.x-x;
+        that.b-=that.y-y;
+        that.x=x;that.y=y;
+        update();
+    })
+    var p2 = Dot(parent,a,b,"red");
+    set(p2,"style","cursor:pointer");
+    p2.addEventListener("mousedown", function(e){moving=1;e.stopPropagation();},false)
+    moves.push( function(e){
+        [a,b] = ePos(e);
+        that.a=a;that.b=b;
+        update();
+    })
+    var p3 = Dot(parent,c,d,"red");
+    set(p3,"style","cursor:pointer");
+    p3.addEventListener("mousedown", function(e){moving=2;e.stopPropagation();},false)
+    moves.push( function(e){
+        [c,d] = ePos(e);
+        that.c=c;that.dd=d;
+        update();
+    })
+    var p4 = Dot(parent,e,f,"red");
+    set(p4,"style","cursor:pointer");
+    p4.addEventListener("mousedown", function(e){moving=3;e.stopPropagation();},false)
+    moves.push( function(e){
+        [e,f] = ePos(e);
+        that.c-=that.e-e;
+        that.dd-=that.f-f;
+        that.e=e;that.f=f;
+        update();
+    })
+    
+    moves.push( function(e){
+        var pos=ePos(e);
+        var l=['a','b','c','dd','e','f'];
+        var dx=past[0]-pos[0];
+        var dy=past[1]-pos[1];
+        that.x-=dx;
+        that.y-=dy;
+        that.a-=dx;
+        that.b-=dy;
+        that.c-=dx;
+        that.dd-=dy;
+        that.e-=dx;
+        that.f-=dy;
+        past=pos;
+        update();
+    });
+    parent.addEventListener("mousemove",function(ev){
+        if (moving!=null)moves[moving](ev);
+        ev.stopPropagation();
+    },true);
+    parent.addEventListener("mouseup",function(ev){
+        moving=null;
+    },true);
+    parent.addEventListener("mousedown",function(ev){ev.preventDefault();},true);
+    parent.addEventListener("mousedown",function(ev){ev.stopPropagation();},false);
+    parent.onmousedown = function(e){e.preventDefault();return false;}
+    that.dots = [p1,p2,p3,p4]
+    update()
+    return that;
+}
+
+var path = Path(main,"black",4);
+path.addSeg(Seg("M",10,10));
+path.addSeg(Seg("L",40,40));
+path.addSeg(Seg("L",70,10));
+path.addSeg(Seg("L",100,40));
+path.addSeg(Seg("C",100,70,160,70,160,40));
+path.update();
+
+var cub = Cubic(main,100,100,150,100,150,150,200,150);
+var cub = Cubic(main,200,200,250,200,250,250,300,250);
+document.addEventListener("mousedown",function(e){if (e.button==2) Cubic(main,100,100,150,100,150,150,200,150) },true);
+</script>
+
+</body>
+</html>

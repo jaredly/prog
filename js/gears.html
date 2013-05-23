@@ -1,0 +1,72 @@
+<html><head><title>Mousers</title></head>
+<body>
+<script>
+var db;
+init();
+
+function init(){
+    if (window.google && google.gears) {
+    try {
+        db = google.gears.factory.create('beta.database', '1.0');
+        if (db) {
+            db.open(name);
+            db.execute('create table if not exists Store (Data varchar(20000), Timestamp int)');
+
+        // Initialize the UI at startup.
+            Load();
+        }
+    } catch (ex) {
+      setError('Could not create database: ' + ex.message);
+    }
+  }
+}
+
+function Save(what) {
+  if (!google.gears.factory || !db) {
+    return;
+  }
+  
+  var currTime = new Date().getTime();
+
+  // Insert the new item.
+  // The Gears database automatically escapes/unescapes inserted values.
+  db.execute('insert into Demo values (?, ?)', [what, currTime]);
+
+  // Update the UI.
+  Load();
+}
+
+
+function displayRecentPhrases() {
+  var recentPhrases = ['', '', ''];
+
+  // We re-throw Gears exceptions to make them play nice with certain tools.
+  // This will be unnecessary in a future version of Gears.
+  try {
+
+    // Get the 3 most recent entries. Delete any others.
+    var rs = db.execute('select * from Store order by Timestamp desc');
+    var index = 0;
+/*    while (rs.isValidRow()) {
+      if (index < 3) {
+        recentPhrases[index] = rs.field(0);
+      } else {
+        db.execute('delete from Demo where Timestamp=?', [rs.field(1)]);
+      }
+      ++index;
+      rs.next();
+    }
+*/
+    var data = rs.field(0)
+    rs.close();
+
+  } catch (e) {
+    throw new Error(e.message);
+  }
+
+  document.body.innerHTML = data;
+}
+
+</script>
+
+</body></html>

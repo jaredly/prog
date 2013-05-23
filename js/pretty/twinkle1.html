@@ -1,0 +1,63 @@
+<html>
+<head>
+<title>Twinkle</title>
+<script src="/prog/js/lib/math.inc.js"></script>
+</head>
+<body>
+<canvas id="screen" width="200" height="100"/>
+
+<script>
+function chain(x){
+    return function(){ return x.apply(this,arguments)||this; };
+}
+CanvasRenderingContext2D.prototype.set = function( what, to )
+{this[what] = to;}
+
+for( chainThat in {set:1,clearRect:1,save:1,translate:1,rotate:1,drawImage:1,scale:1,restore:1,fillRect:1,moveTo:1,lineTo:1,beginPath:1,closePath:1,stroke:1,fill:1,arc:1} )
+{
+    CanvasRenderingContext2D.prototype[chainThat] = chain( CanvasRenderingContext2D.prototype[chainThat] );
+}
+var c = document.getElementById("screen").getContext("2d").set('globalAlpha',.1);
+
+function linesin(c,t,width,xpos,height,period,xoff){
+    var x1 = t%width-period/3.2+xoff;
+    var x2 = x1+period/1.6;
+    var y1 = Math.sin(x1/(period/2)*Math.PI)*(height/2-parseInt((t-width)/width)*5) + xpos;
+    var y2 = Math.sin(x2/(period/2)*Math.PI)*(height/2-parseInt((t-width)/width)*5) + xpos;
+    c.beginPath().moveTo(x1,y1).lineTo(x2,y2).stroke();
+}
+
+var i = 0;
+var di = 1;
+function doone(){
+    c.strokeStyle="blue";
+    c.globalAlpha = 1;
+    for (var e=80*i;e<80+80*i;e+=2){
+        linesin(c,e,80,50,100,80,10);
+    }
+    i+=di;
+    if (i>20 || i<=0)di*=-1;
+}
+
+var t = 0;
+var d = 2;
+(function(){
+    c.set('globalAlpha',.05);
+    c.fillStyle = "white";
+    c.fillRect(0,0,200,100);
+    t+=d;
+    c.set('globalAlpha',.5);
+    linesin(c,t,160,50,100,80,20);
+    if (t>22*160 || t<0)
+        d*=-1;
+    while (parseInt((t-160)/160)*5==100/2){
+        t+=d;
+    }
+    setTimeout(arguments.callee,10);
+})();
+
+document.getElementById("screen").onclick = doone;
+
+</script>
+</body>
+</html>

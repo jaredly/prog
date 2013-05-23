@@ -1,0 +1,104 @@
+body{
+    background-color:black;
+}
+#underdiv{
+    background-color:white;
+    width:300;
+    height:300;
+}
+div.over{
+    position:absolute;
+    top:0;
+    left:0;
+    opacity:0.5;
+    width:100%;
+    height:100%;
+    background:black;
+}
+img.topim{
+    width:300px;
+    height:300px;
+    position:absolute;
+    top:50%;
+    background-color:white;
+    left:50%;
+}
+#buttons{
+    background-color:black;
+    padding:5px;
+}
+img.thumb{
+    border:2px solid #000;
+    height:100px;
+    background:white;
+}
+span.button{
+    cursor:pointer;
+    border: 1px solid #aaa;
+    background-color:black;
+    color:white;
+    padding:3px;
+}
+#canvas{
+    position:absolute;
+}
+#underlay{
+    background-color:white;
+    position:absolute;
+    top:20;
+    left:20;
+    opacity:0.5;
+    visibility:hidden;
+    width:300;
+    height:300;
+}
+span.button:hover{
+    background-color:#aaa;
+}
+span.border{
+    border: 1px solid #aaa;
+}
+div.slider{
+    background-color:white;
+    height:10;
+    margin:10px;
+    border:2px inset #ccc;
+}
+div.slide{
+    background-color:#aaa;
+    position:absolute;
+    margin-top:-10;
+    width:10;
+    height:26;
+    border:3px outset #ccc;
+}
+#mouseunder{
+    position:absolute;
+    top:0;
+    left:0;
+}
+tr.thumb{
+    width:100%;
+}
+tr.thumb td{
+    width:100%;
+}
+div.seperator{
+    background-color:blue;
+    border:2px outset blue;
+    width:5px;
+    height:100px;
+}
+img.delete{
+    position:absolute;
+    visibility:hidden;
+    top:0;
+    left:0;
+}
+img.closebutton{
+    position:absolute;
+    top:0;
+    left:0;
+    visibility:hidden;
+}
+}

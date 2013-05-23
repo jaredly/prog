@@ -1,0 +1,197 @@
+<html>
+<head>
+<title>Pygame.js</title>
+<script src="../include.js"></script>
+<script src="../classy_js.js"></script>
+</head>
+<body>
+<canvas id='pygame.js'></canvas>
+<canvas id='double' style='visibility:hidden'></canvas>
+<script src="pygame.js"></script>
+<script>
+
+var Rect = Class([],{
+    __init__:function(self,x,y,w,h){
+        self.x=x;
+        self.y=y;
+        self.w=w;
+        self.h=h;
+    },
+    colliderect:function(self,other){
+        var xs,ys;
+        if (self.x<other.x) xs = (other.x-self.x)<self.w;
+        else xs = (self.x-other.x)<other.w;
+        if (self.y<other.y) ys = (other.y-self.y)<self.h;
+        else ys = (self.y-other.y)<other.h;
+        return xs && ys;
+    }
+});
+
+var Sprite = Class([],{
+    __init__:function(self){
+        self.rect = Rect(0,0,0,0);
+    },
+    step:function(self){},
+    event:function(self){},
+    draw:function(self,scr){}
+});
+
+/**************************************
+var ImageSprite = Class([Sprite],{
+    __init__:function(self,pos,img){
+        Sprite.__init__(self)
+        var [x,y] = pos;
+        self.img = img;
+        self.rect = Rect(x-img.width/2,y-img.height/2,img.width,img.height);
+    },
+    draw:function(self,scr){
+        scr.blit(self.img,[self.rect.x,self.rect.y]);
+    }
+});
+
+var TrickedOutSprite = Class([ImageSprite],{
+    __init__:function(self,parent,pos,image,dx,dy,gravity){
+        ImageSprite.__init__(self,pos,image);
+        self.parent = parent;
+        self.dx = dx || 0;
+        self.dy = dy || 0;
+        self.gravity = gravity || 0;
+    },
+    step:function(self){
+        self.rect.x += self.dx;
+        self.rect.y += self.dy;
+        self.dy += self.gravity;
+    },
+    collision_at:function(self,[x,y],type){
+        self.rect.x+=x;
+        self.rect.y+=y;
+        var col = false;
+        for each(other in self.parent.objects){
+            if (((!type) || other._class==type) && self.rect.colliderect(other.rect)){
+            //console.log('coltest',x,y,type)
+                col=true;
+                break;
+            }
+        }
+        self.rect.x-=x;
+        self.rect.y-=y;
+        return col;
+    }
+});
+
+var Guy = Class([TrickedOutSprite],{
+    __init__:function(self,parent,pos){
+        TrickedOutSprite.__init__(self,parent,pos,images['guy'],0,0,0.5);
+    },
+    step:function(self){
+        TrickedOutSprite.step(self);
+        if (self.rect.x<0){
+            self.rect.x=0;self.dx=0;//*=-1;
+        }
+        if (self.rect.y<0){
+            self.rect.y=0;self.dy*=-1;
+        }
+        if (self.rect.x>200){
+            self.rect.x=200;self.dx=0;//*=-1;
+        }
+        if (self.rect.y>200){
+            self.rect.y=200;self.dy = 0;//*=-.9;
+        }
+        if (self.collision_at([0,5],Block)){
+            self.dy = 0;
+            self.gravity = 0;
+        }else{
+            self.gravity = 0.5;
+        }
+    },
+    event:function(self,e){
+        if (e.type=='keydown'){
+            if (e.keyCode==37){
+                self.dx = -3;
+            }else if (e.keyCode==38){
+                if (self.gravity==0)self.dy = -10;
+            }else if (e.keyCode==39){
+                self.dx = 3;
+            }else if (e.keyCode==40){
+                //self.dy += 2;
+            }
+        }else if (e.type=='keyup'){
+            if (e.keyCode==37){
+                self.dx=0;
+            }else if (e.keyCode==39){
+                self.dx = 0;
+            }
+        }
+    },
+    collide:function(self,other){
+        if (other._class==Block){
+            //self.dy = 0;
+            //self.gravity = 0;
+        }
+        
+    }
+});
+
+var Block = Class([ImageSprite],{
+    __init__:function(self,pos){
+        ImageSprite.__init__(self,pos,images['block']);
+    }
+});
+
+var loaded = 2;
+var images = {'guy':'http://pygame.org/thumb/047e224b25dcf46d43ff5463f2875634.jpg',
+              'block':'block.png'};
+
+function preload_images(){
+    for (img in images){
+        var im = new Image();
+        im.onload = function(){
+            loaded-=1;
+            if (loaded==0)load();
+        }
+        im.src = images[img];
+        images[img] = im;
+    }
+}
+
+var gm;
+function load(){
+    gm = Game();
+    [gm.objects.push(Block([i*20,280])) for each(i in range(15)) if (i<15 && i>0)];
+    gm.objects.push(Guy(gm,[100,50]));
+    gm.loop();
+}
+
+preload_images();
+***********************/
+
+var Bird = Class([Sprite],{
+    __init__:function(self,pos,color,size){
+        Sprite.__init__(self);
+        self.pos = pos;
+        self.color = color;
+        self.size = size;
+        self.dx=1;
+        self.dy=2;
+    },
+    draw:function(self,screen){//console.log(screen);
+    screen._ctx.globalAlpha = 0.5;
+        pygame.draw.circle(screen,self.color,self.pos,self.size);
+    },
+    step:function(self){
+        self.pos[0]+=self.dx;
+        self.pos[1]+=self.dy;
+        if (self.pos[0]>200-self.size || self.pos[0]-self.size<0)self.dx*=-1;
+        if (self.pos[1]>200-self.size || self.pos[1]-self.size<0)self.dy*=-1;
+    }
+});
+
+
+
+var gm = Game();
+gm.objects.push(Bird([10,10],[0,255,0],10));
+gm.loop();
+
+</script>
+</body>
+</html>

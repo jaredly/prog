@@ -1,0 +1,4 @@
+
+Sprite = Class({
+
+})

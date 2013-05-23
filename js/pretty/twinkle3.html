@@ -1,0 +1,56 @@
+<html>
+<head>
+<title>Twinkle</title>
+<script src="/prog/js/lib/math.inc.js"></script>
+<script src="/prog/js/lib/dom.inc.js"></script>
+</head>
+<body>
+<canvas id="screen" width="200" height="100"/>
+
+<script>
+function chain(x){
+    return function(){ return x.apply(this,arguments)||this; };
+}
+CanvasRenderingContext2D.prototype.set = function( what, to )
+{this[what] = to;}
+
+for( chainThat in {set:1,clearRect:1,save:1,translate:1,rotate:1,drawImage:1,scale:1,restore:1,fillRect:1,moveTo:1,lineTo:1,beginPath:1,closePath:1,stroke:1,fill:1,arc:1} )
+{
+    CanvasRenderingContext2D.prototype[chainThat] = chain( CanvasRenderingContext2D.prototype[chainThat] );
+}
+var c = document.getElementById("screen").getContext("2d").set('globalAlpha',.1);
+
+function rp(){return [Math.random()*200,Math.random()*100];}
+
+var t = 0;
+var gt = 0;
+var pts = [];
+for (var i=0;i<5;i++)pts.push([100,50]);
+var dp = rp();
+(function(){
+    c.set('globalAlpha',.1);
+    c.fillStyle = "black";
+    c.fillRect(0,0,200,100);
+    t+=2;
+    gt+=2;
+    c.set('globalAlpha',.1);
+    c.lineWidth=2;
+    c.strokeStyle = 'hsl('+gt%360+",100%,50%)";
+    for (var i=1;i<pts.length;i++){
+        pts[i-1][0] += (pts[i][0]-pts[i-1][0])/20;
+        pts[i-1][1] += (pts[i][1]-pts[i-1][1])/20;
+    }
+    var fp = pts[pts.length-1];
+    fp[0] += (dp[0]-fp[0])/20;
+    fp[1] += (dp[1]-fp[1])/20;
+    if (t>100){t=0;dp=rp();}
+    for (var i=0;i<pts.length;i++){
+        c.beginPath().arc(pts[i][0],pts[i][1],10,0,Math.PI*2,true).stroke();
+    }
+    setTimeout(arguments.callee,10);
+})();
+//document.onmousemove = function(e){dp=mousePos(e);}
+
+</script>
+</body>
+</html>

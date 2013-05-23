@@ -1,0 +1,87 @@
+<html><body>
+
+<canvas id="canv"></canvas>
+
+
+<script>function $(e){return document.getElementById(e);}
+function cE(e){return document.createElement(e);}
+
+function findPos(obj) {
+	var curleft = curtop = 0;
+	if (obj.offsetParent) {
+		curleft = obj.offsetLeft
+		curtop = obj.offsetTop
+		while (obj = obj.offsetParent) {
+			curleft += obj.offsetLeft
+			curtop += obj.offsetTop
+		}
+	}
+	return [curleft,curtop];
+}
+
+
+function mousePos(e) {
+	var posx = 0;
+	var posy = 0;
+	if (!e) var e = window.event;
+	if (e.pageX || e.pageY) 	{
+		posx = e.pageX;
+		posy = e.pageY;
+	}
+	else if (e.clientX || e.clientY) 	{
+		posx = e.clientX + document.body.scrollLeft
+			+ document.documentElement.scrollLeft;
+		posy = e.clientY + document.body.scrollTop
+			+ document.documentElement.scrollTop;
+	}
+	return [posx,posy]
+}
+
+function i(ar,fn){
+    for (var x=0;x<ar.length;x++){
+        fn(ar[x]);
+    }
+}
+
+function angleTo(x,y,a,b){
+    dx = a-x
+    dy = b-y
+    if (!dx){
+        if (dy>0)return Math.PI/2  //-Math.PI/2
+        else return Math.PI*3/2  //-Math.PI/2
+    }
+    if (dx>0) return Math.atan(dy/dx)  //-Math.PI/2
+    else return Math.atan(dy/dx) + Math.PI  // -Math.PI/2
+}
+
+function addVectors(v1,v2){
+    var [a,b]=v1;
+    var [c,d]=v2;
+    var tx = a*Math.cos(b) + c*Math.cos(d);
+    var ty = a*Math.sin(b) + c*Math.sin(d);
+    var mag = Math.sqrt(tx*tx+ty*ty)
+    var dir = angleTo(tx,ty,0,0);
+    return [mag,dir + Math.PI]
+}
+
+var canv = $('canv');
+var ctx = canv.getContext('2d');
+
+ctx.drawCircle = function(x,y,r,color,fill){
+    this.beginPath();
+    this.fillStyle = this.strokeStyle = color||"black"
+    this.arc(x,y,r,0,Math.PI*2,true);
+    if (fill){this.fill();}
+    else this.stroke()
+}
+ctx.polyline = function(lst){
+    for (var i=0;i<lst.length;i++){
+        ctx.lineTo(lst[i][0],lst[i][1]);
+    }
+}
+
+ctx.drawCircle(10,10,10,'red');
+</script>
+
+
+</body></html>

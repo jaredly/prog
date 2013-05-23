@@ -1,0 +1,97 @@
+<html>
+<head>
+    <title>Canvas Tester</title>
+    <style>
+        #display div {
+        }
+        #display {
+            background-color: #f0fefe;
+            border: 2px solid darkblue;
+            height: 50%;
+            overflow: auto;
+        }
+        #entry {
+            border: none;
+            width: 100%;
+            background-color: #f0fefe;
+            padding-left: 10px;
+        }
+    </style>
+    <script src="canvastext.js"></script>
+    <script src="ajax.js"></script>
+    <script src="text.js"></script>
+</head>
+<body style="padding:0;margin:0">
+    <canvas id="canv"></canvas>
+    <div id="display">
+    <input id="entry">
+    </div>
+    <script>
+    function $(e){return document.getElementById(e);}
+    var canv = $("canv");canv.width=window.innerWidth;canv.height=window.innerHeight/2-40;
+    var ctx = canv.getContext("2d");
+    var entry = $("entry");
+    var display = $("display");
+    
+    
+    
+
+
+function rounded_rect(x,y,w,h,rx,ry){
+
+    ctx.beginPath()
+    ctx.moveTo(x,y+ry)
+    ctx.quadraticCurveTo(x,y,x+rx,y)
+    ctx.lineTo(x+w-rx,y)
+    ctx.quadraticCurveTo(x+w,y,x+w,y+ry)
+    ctx.lineTo(x+w,y+h-ry)
+    ctx.quadraticCurveTo(x+w,y+h,x+w-rx,y+h)
+    ctx.lineTo(rx,y+h)
+    ctx.quadraticCurveTo(x,y+h,x,y+h-ry)
+    ctx.lineTo(x,y+ry)
+    ctx.fill()
+
+}
+
+var a=ctx.createLinearGradient(0,0,0,100);
+a.addColorStop(0,"#525a38");
+a.addColorStop(1,"#8e9c61");
+ctx.fillStyle = a;
+
+rounded_rect(0,0,200,100,20,20)
+
+var a=ctx.createLinearGradient(0,5,0,100);
+a.addColorStop(0,"#ffffff");
+a.addColorStop(.12,"rgba(255,255,255,0)");
+ctx.fillStyle = a;
+
+rounded_rect(5,5,190,90,15,15)
+
+
+
+letters = loadFont("Liberation-Regular.svg")
+ctx.strokeStyle = "red";
+ctx.fillStyle = "black";
+
+draw_center(ctx, letters, 20, "Hello World", 100,50);
+
+    function enter(v,x){
+        if (typeof(x)=="undefined")x="";
+        var that = document.createElement("div");
+        console.log(that,display,entry);
+        display.insertBefore(that,entry);
+        that.innerHTML = ">>> "+v+"<div class='result'>"+x+"</div>";
+    }
+    
+    entry.addEventListener("keypress",function(e){
+        if (e.keyCode==13){
+            try{
+                enter(this.value,window.eval(this.value));
+            }catch(e){
+                enter(this.value,e.message);
+            }
+            this.value = "";
+        }
+    },false);
+    </script>
+</body>

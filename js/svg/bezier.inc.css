@@ -1,0 +1,56 @@
+
+.menu {
+    position: absolute;
+    padding: 3px;
+    border: 1px solid black;
+    background-color: white;
+    color: black;
+}
+
+.menu div {
+    padding-left: 5px;
+}
+
+iframe.window {
+    width:95%;
+    height:95%;
+    top:2.5%;
+    left:2.5%;
+    position:fixed;
+}
+
+.hover {
+    background-color: lightblue;
+    color:white;
+}
+
+.dialog {
+    position: fixed;
+    padding: 20px;
+    background-color: lightgreen;
+    border: 5px solid darkgreen;
+    top:0px;
+    left:0px;
+    text-align: center;
+    visibility:hidden;
+}
+
+.dialog input {
+    margin: 2px;
+}
+
+.dialog iframe {
+    width:0px;
+    height:0px;
+    border:none;
+}
+
+.back {
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background-color:black;
+    opacity:0;
+}

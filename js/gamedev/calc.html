@@ -1,0 +1,47 @@
+<html>
+<head><title>thing</title></head>
+<script src='/prog/js/lib/dom.inc.js'></script>
+<body>
+Number: <input id='num'/><br/>
+<button onclick='doit()'>Yeah</button>
+<script>
+
+function sumn(n,m){
+    var sum = 0;
+    for (var i=1;i<=m;i++){
+        sum += Math.pow(i,n);
+    }
+    return sum;
+}
+a1^9+b1^8+c1^7+d1^7 = 1^9
+a3^9+b3^8+c3^7+d3^6... = 1^8 + 2^8 + 3^8
+
+
+ + 4^8 + 5^8 + 6^8 + 7^8 + 8^8
+
+var coeffs = [];
+for (var i=0;i<8;i++){
+    coeffs.push([]);
+    for (var e=0;e<i;e++){
+        coeffs[i] = 
+    }
+}
+
+
+
+function sums(n){
+    var r = [];
+    for (var i=1;i<n;i++){
+        r.push(sumn(i));
+        document.body.appendChild(cE('div')).appendChild(cTN(i+' '+sumn(i)));
+    }
+    return r;
+}
+
+function doit(){
+    sums(10);
+}
+
+
+</script>
+</body>

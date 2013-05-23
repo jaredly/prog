@@ -1,0 +1,40 @@
+<html>
+<head>
+    <title>Draw Canvas</title>
+    <script type="text/javascript" src="include.js"></script>
+    <script type="text/javascript" src="draw.js"></script>
+    <link rel="stylesheet" href="draw.css"/>
+</head>
+<body onload="load()">
+    <div id="buttons">
+        <span class="button" onmousedown="clearit();return false;">clear</span>
+        <span class="button" onclick="putback()">next</span>
+        <span class="button" onclick="white()">white</span>
+        <span class="button" onclick="erase()">erase</span>
+        <span class="button" onclick="black()">black</span>
+        <span class="button" onclick="play()">play</span>
+    </div>
+    <img src='/images/cross.png' id='exitbutton' class='closebutton'>
+    <table><tr><td>
+        <span class="button" onclick="load_from('sample')">sample</span>
+        <input id="name">
+        <span class="button" onclick="load2($('name').value)">Load</span>
+    <div id="underdiv"></div>
+    <img id="underlay"/>
+    <canvas id="canvas" height="300" width="300"></canvas>
+    <canvas id="mouseunder" height="10" width="10"></canvas>
+    </td><td>
+        <canvas height="192" width="192" id="color"></canvas><br/>
+        <!--div class="slider" id="slider">
+            <div class="slide"></div>
+        </div-->
+        <canvas height="100" width="200" id="slider"></canvas>
+    </td></tr>
+    <tr class="thumb">
+        <td>
+            <div id="thumbs">
+            </div>
+        </td>
+    </tr>
+</table>
+</body>

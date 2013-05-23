@@ -1,0 +1,41 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>SvgFlash</title>
+    <script type="text/javascript" src="svg.inc.js"></script>
+    <link rel="stylesheet">
+</head>
+<body>
+    <div id="toolbar"></div>
+<script>
+
+svg = createSVG('svg');
+svg.style.position="absolute"
+svg.style.top="0px"
+svg.style.left="0px"
+document.body.appendChild(svg);
+
+c=new Circle(svg,50,50,25,{});
+d=new Circle(svg,100,50,25,{lcolor:"red",lwidth:0,bgcolor:"white"});
+new Circle(svg,100,50,25,{lcolor:"red",lwidth:0,bgcolor:"blue"});
+new Circle(svg,100,50,25,{lcolor:"red",lwidth:0,bgcolor:"green"});
+new Rect(svg,30,30,20,20,{})
+document.onmouseup=function(){
+    for (var i=0;i<svg.childNodes.length;i++){svg.childNodes[i].moving=0;}
+}
+document.onmousedown=function(){
+    for (var i=0;i<svg.childNodes.length;i++){if (svg.childNodes[i].blur){svg.childNodes[i].blur()}}
+}
+document.onmousemove=function(e){
+    for (var i=0;i<svg.childNodes.length;i++){svg.childNodes[i].mousemove(e)}
+}
+</script>
+
+
+
+
+
+
+
+</body></html>

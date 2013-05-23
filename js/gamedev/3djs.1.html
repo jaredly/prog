@@ -1,0 +1,132 @@
+<html>
+<head>
+    <title>3D js</title>
+</head>
+<body>
+
+    <script src="/prog/js/lib/math.inc.js"></script>
+    <script src="/prog/js/lib/dom.inc.js"></script>
+    <canvas id="screen" width="400px" height="400px"></canvas>
+
+<script>
+
+var canv = $('screen');
+var ctx = canv.getContext('2d');
+
+var c = [200,200];
+
+function dz(x,z){return x*Math.pow(1.5,-z+1);}
+function dp(x,y,z){
+    return [c[0]+dz(x-c[0],z),c[1]+dz(y-c[1],z)];
+}
+
+function draw_circle(x,y,z,sz){
+    var p = dp(c[0]+x,c[1]+y,z);
+    ctx.beginPath();
+    ctx.arc(p[0],p[1],dz(sz,z),0,Math.PI*2,true);
+    ctx.fill();
+}
+t = 0;
+/**(function(){
+    ctx.clearRect(0,0,400,400);
+    //draw_circle(200+Math.sin(t)*100,200+Math.cos(t)*100,Math.sin(t),40);
+    for (var i=0;i<100;i+=10){
+        draw_circle(200+Math.sin(t+Math.PI*i/50)*100,200+Math.cos(t+Math.PI*i/50)*100,Math.sin(t+Math.PI*i/50)+1,10);
+    }
+    t+=Math.PI/100;
+    setTimeout(arguments.callee,33);
+})();
+**/
+
+var state = [1,1,1,1];
+
+var horiz = Math.PI/4;
+var vert = 0;
+var colors = ['red','blue','green','orange'];
+
+function draw_matrix(matrix){
+    var all = [];
+    for (var z=0;z<3;z++){
+    for (var y=0;y<4;y++){
+    for (var x=0;x<4;x++){
+        var [nx,nz] = rot_around([x-1.5,z-1],[0,0],horiz);
+        var [ny,nz] = rot_around([y-1.5,nz],[0,0],vert);
+        all.push([nz,nx,ny,matrix[z][y][x]]);
+    }}}
+    all.sort().reverse();
+    for (var i=0;i<all.length;i++){
+        var c = all[i][3];
+        if (state[c] == -1)
+            continue;
+        else if (state[c] == 0){
+            ctx.fillStyle = 'black';
+            ctx.globalAlpha = 0.5;
+            draw_circle(all[i][1]*40,all[i][2]*40,(all[i][0]/5+1),3);
+        }else{
+            ctx.fillStyle = colors[c];
+            ctx.globalAlpha = 1;
+            draw_circle(all[i][1]*40,all[i][2]*40,(all[i][0]/5+1),10);
+        }
+    }
+    //vert += Math.PI/100;
+    horiz += Math.PI/200;
+}
+
+function square(a,b,w,z,xp,yp,zp){
+    if (xp==null)xp=0;
+    if (yp==null)yp=1;
+    if (zp==null)zp=2;
+    var r = [];
+    for (var x=a;x<a+w;x++){
+    for (var y=b;y<b+w;y++){
+        var pt = [0,0,0];
+        pt[xp]=x;pt[yp]=y;pt[zp]=z;
+        r.push(pt);
+    }}
+    return r;
+}
+
+var one = square(0,0,3,0).concat(square(0,0,2,1)).concat([[0,0,2]]);
+var two = square(1,0,3,3,1,2,0).concat(square(2,1,2,2,1,2,0)).concat([[1,3,2]]);
+var three = square(0,0,3,0,0,2,1).concat(square(0,1,2,2,0,2,1)).concat([[0,3,2]]);
+
+var matrix = [];
+// initialize all to None
+for (var z=0;z<3;z++){matrix.push([])
+for (var y=0;y<4;y++){matrix[z].push([])
+for (var x=0;x<4;x++){
+    matrix[z][y].push(0);
+}}}
+
+for (var i=0;i<one.length;i++){
+    var [x,y,z] = one[i];
+    matrix[z][y][x] = 1;
+}
+for (var i=0;i<two.length;i++){
+    var [x,y,z] = two[i];
+    matrix[z][y][x] = 2;
+}
+for (var i=0;i<three.length;i++){
+    var [x,y,z] = three[i];
+    matrix[z][y][x] = 3;
+}
+
+
+(function(){
+    ctx.clearRect(0,0,400,400);
+    /**
+for (var y=-5;y<=5;y++){
+    for (var x=0;x<10;x++){
+        draw_circle(100+x*20,200+y*20*Math.sin(t),1+y/10*Math.cos(t),3);
+    }
+}**/
+    draw_matrix(matrix);
+    t+=Math.PI/20;
+    setTimeout(arguments.callee,33);
+})();
+
+</script>
+
+
+</body>
+</html>

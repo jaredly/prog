@@ -1,0 +1,19 @@
+
+<!-- cool effects -->
+<script>
+
+/** circle sin wave **/
+
+function circlesin(c,t,width,ypos,height){
+    c.beginPath().arc(t%width,Math.sin(Math.PI*(t%width)/width*2*(parseInt(width/200)+1))*height/2+(ypos/2-(t-width)/width*10),10,0,Math.PI*2,true).stroke();
+}
+
+function linesin(c,t,width,xpos,height){
+    var x1 = t%width-25;
+    var x2 = x1+50;
+    var y1 = Math.sin(x1/40*Math.PI)*(height/2-(t-width)/width*5) + xpos;
+    var y2 = Math.sin(x2/40*Math.PI)*(height/2-(t-width)/width*5) + xpos;
+    c.beginPath().moveTo(x1,y1).lineTo(x2,y2).stroke();
+}
+
+</script>

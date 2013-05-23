@@ -1,0 +1,131 @@
+<html>
+<head>
+    <title>String Art</title>
+    <script src="/prog/js/lib/dom.inc.js"></script>
+    <script src="/prog/js/lib/math.inc.js"></script>
+    <script src="/prog/js/lib/canvas.inc.js"></script>
+</head>
+<body>
+
+<script>
+
+function poc([cx,cy],r,t){
+    return [cx+r*Math.cos(t), cy+r*Math.sin(t)];
+}
+
+function chord(cn,r,ti,tf,c){
+    return [poc(cn,r,ti), poc(cn,r,tf),c];
+}
+
+function draw_chord(ctx,cn,r,ti,tf){
+    var [p1,p2] = chord(cn,r,ti,tf);
+    //console.log(p1,p2);
+    ctx.beginPath();
+    ctx.moveTo(int(p1[0]),int(p1[1]));
+    ctx.lineTo(int(p2[0]),int(p2[1]));
+    ctx.stroke();
+}
+
+function draw_line(ctx,p1,p2){
+    ctx.beginPath();
+    ctx.moveTo(int(p1[0]),int(p1[1]));
+    ctx.lineTo(int(p2[0]),int(p2[1]));
+    ctx.stroke();
+}
+
+var canv = document.body.appendChild(cE("canvas"));
+canv.height = 800;
+canv.width = 800;
+var ctx = canv.getContext("2d");
+
+var num = 41;
+    
+    var lines = [];
+    function thing1(){
+        for (var ti=0;ti<num;ti++){
+            for (var tf=ti+1;tf<num;tf++){
+                lines.push(chord([100,100],100,Math.PI*2*ti/num,Math.PI*2*tf/num));
+            }
+        }
+    }
+    function thing2(){
+        
+        var red = 0;
+        var green = 0;
+        var blue = 0;
+        for (var diff=1;diff<num/2;diff++){ // changed diff<num/2 to diff<num. use the former w/o alpha
+            for (var ti=0;ti<num;ti++){
+                var tf = ti+diff;
+                var color = "rgb("+red+","+green+","+blue+")";
+                lines.push(chord([400,400],200,Math.PI*2*ti/num,Math.PI*2*tf/num,color));
+                if (red<255)red+=1;
+                else if (green<255)green+=1;
+                else if (blue<255)blue+=1
+                //blue-=1
+            }
+            //b+=2*255/num;
+        }
+    }
+    thing2();
+    var lpos = 0;
+    var dir = 1;
+    
+    
+    
+    function calcpos(t1,m1,t2,m2,[x,y]){
+        var pz = Vector(t1,m1).add(Vector(t2,m2)).pos();
+        return [pz[0]+x,pz[1]+y];
+    }
+    
+    function calcposes(){
+        //var poses = [];
+        var t1 = 0;
+        var m1 = 50;
+        var s1 = Math.PI/200;
+        var t2 = 0;
+        var m2 = 40;
+        var s2 = Math.PI/50.2;
+        var c = [100,100];
+        var last = calcpos(t1,m1,t2,m2,c);
+        for (var t=0;t<1000;t++){
+            t1+=s1;
+            t2+=s2;
+            var newz = calcpos(t1,m1,t2,m2,c)
+            lines.push([last,newz]);
+            last=newz;
+        }
+    }
+    //thing2();
+    
+    var g = Game(canv,[800,800]);
+    g.r = 0;
+    g.redraw = false;
+    g.ctx.globalAlpha = 0.5;
+    g.step = function(){
+    }
+    g.draw = function(){
+        g.ctx.strokeStyle = lines[lpos][2];
+        draw_line(g.ctx,lines[lpos][0],lines[lpos][1]);
+        lpos+=dir;
+        if (lpos>=lines.length || lpos<0){
+            dir*=-1;
+            if (dir==1){
+                g.ctx.strokeStyle = "black";
+                g.ctx.lineWidth = 1;
+            }
+            else{
+                g.ctx.strokeStyle = "white";
+                g.ctx.lineWidth = 2;
+            }
+            //g.ctx.strokeStyle = ["black","white"][dir==1 && 0 || 1];
+            lpos+=dir;
+        }
+
+    }
+
+    g.fps = 40;
+    g.run()
+
+</script>
+</body>
+</html>

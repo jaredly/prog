@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--
+Design by Free CSS Templates
+http://www.freecsstemplates.org
+Released for free under a Creative Commons Attribution 2.5 License
+
+Name       : Radiance
+Description: Fixed-width design for blogs and small websites.
+Version    : 1.0
+Released   : 20071007
+
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>Buttonr</title>
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<link href="default.css" rel="stylesheet" type="text/css" media="screen" />
+<script src="ajax.js"></script>
+<script src="text.js"></script>
+<style>
+.entry {
+    font-size: 20px;
+}
+.entry input {
+    font-size: 15px;
+    border: 2px solid #a0a0a0;
+    padding: 5px;
+}
+.entry select{
+    width:100%;
+    font-size: 15px;
+    border: 2px solid #a0a0a0;
+    padding: 5px;
+}
+#sizer {
+    float:right;
+    margin-top:7px;
+    background: url(images/slider.png);
+    width: 200px;
+    height:20px;
+    
+}
+#size{
+    float:left;
+    width:30;
+}
+#slider {
+    margin-top: -4px;
+    background-color:#f0f0f0;
+    width:10px;
+    height:25px;
+    position:absolute;
+    border:2px solid #a0a0a0;
+}
+div.back {
+    width:100%;
+    height:100%;
+    top:0px;
+    left:0px;
+    position:fixed;
+    opacity:0.5;
+    background-color:black;
+}
+img.bimg {
+    position:fixed;
+}
+#download {
+    cursor:pointer;
+}
+
+</style>
+</head>
+<body>
+<!-- start header -->
+<div id="logo">
+	<h1>Buttonr</h1>
+	<p><a href="http://jaredforsyth.com" style="text-decoration:underline">By Jared Forsyth</a></p>
+</div>
+<div id="menu">
+	<ul>
+		<li class="current_page_item"><a href="http://jaredforsyth.com">Homepage</a></li>
+		<!--li><a href="#">Products</a></li>
+		<li><a href="#">Services</a></li>
+		<li><a href="#">About Us</a></li>
+		<li><a href="#">Contact Us</a></li-->
+	</ul>
+</div>
+<!-- end header -->
+<hr />
+<!-- start latest post -->
+<div id="latest-post" class="wide-post">
+	<h1 class="title">Preview</h1>
+	<div class="entry">
+            <canvas id="precanv" style="position:absolute;visibility:hidden"></canvas>
+            <img id="preview" style="float:right"/>
+        <div>
+        <table>
+            <tr><td>Text:</td><td><input id="text" value="Click Me"></td></tr>
+            <tr><td>Text&nbsp;Color:</td><td><input id="tcolor" value="#000000"></td></tr>
+            <tr><td>Color1:</td><td><input id="c1" value="#525a38"></td></tr>
+            <tr><td>Color2:</td><td><input id="c2" value="#8e9c61"></td></tr>
+            <tr><td>Font:</td><td><select id="font" style="width:235px"><option value="Liberation-Regular.svg">Liberation-Regular.svg</option></select></td></tr>
+            <tr><td>Size:</td><td><!--select id="size">
+            <option>8</option>
+            <option>10</option>
+            <option>12</option>
+            <option>16</option>
+            <option>20</option>
+            <option>26</option>
+            <option>32</option>
+            <option>40</option>
+            <option>48</option>
+            <option>58</option>
+            <option>64</option>
+            <option>72</option>
+            </select-->
+            <input id="size" value="12" style="width:20px"><div id="sizer"><div id="slider"/></div>
+            
+            </td></tr>
+            <tr><td></td><td><img src="images/download.png" id="download"/></td></tr>
+        </table>
+        </div>
+        <script src="index.js"></script>
+
+
+
+
+
+
+
+
+
+	</div>
+	<div class="bottom"></div>
+</div>
+<div id="recents" class="two-columns">
+
+</div>
+<!--div id="submenu">
+	<ul>
+		<li>
+			<h2>Categories</h2>
+			<ul>
+				<li><a href="#">Aliquam libero</a></li>
+				<li><a href="#">Consectetuer elit</a></li>
+				<li><a href="#">Metus aliquam</a></li>
+				<li><a href="#">Suspendisse mauris</a></li>
+				<li><a href="#">Urnanet non semper</a></li>
+				<li><a href="#">Proin porttitor</a></li>
+			</ul>
+		</li>
+		<li>
+			<h2>Archives</h2>
+			<ul>
+				<li><a href="#">Aliquam libero</a></li>
+				<li><a href="#">Consectetuer elit</a></li>
+				<li><a href="#">Metus aliquam</a></li>
+				<li><a href="#">Suspendisse mauris</a></li>
+				<li><a href="#">Urnanet non semper</a></li>
+				<li><a href="#">Proin porttitor</a></li>
+			</ul>
+		</li>
+		<li>
+			<h2>Aliquam</h2>
+			<ul>
+				<li><a href="#">Aliquam libero</a></li>
+				<li><a href="#">Consectetuer elit</a></li>
+				<li><a href="#">Metus aliquam</a></li>
+				<li><a href="#">Suspendisse mauris</a></li>
+				<li><a href="#">Urnanet non semper</a></li>
+				<li><a href="#">Proin porttitor</a></li>
+			</ul>
+		</li>
+		<li>
+			<h2>Urnanet</h2>
+			<ul>
+				<li><a href="#">Aliquam libero</a></li>
+				<li><a href="#">Consectetuer elit</a></li>
+				<li><a href="#">Metus aliquam</a></li>
+				<li><a href="#">Suspendisse mauris</a></li>
+				<li><a href="#">Urnanet non semper</a></li>
+				<li><a href="#">Proin porttitor</a></li>
+			</ul>
+		</li>
+	</ul>
+	<div style="clear: both;">&nbsp;</div>
+</div-->
+<!-- end submenu -->
+<div id="footer">
+	<p>&copy;2007 All Rights Reserved. &nbsp;&bull;&nbsp; Design by <a href="http://www.freecsstemplates.org/">Free CSS Templates</a> &nbsp;&bull;&nbsp; Icons by <a href="http://www.famfamfam.com/">FAMFAMFAM</a>.</p>
+</div>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<html>
+<head>
+<title>FindMe</title>
+</head>
+<body>
+
+<canvas id='canv' width='200px' height='200px'></canvas>
+
+<script>
+var tm;
+var canv = document.getElementById('canv');
+var ctx = canv.getContext('2d');
+var dir;
+var segs;
+var apple;
+/**
+var dir = [0,1];
+var segs = [];
+var apple = [0,0];
+for (var i=0;i<6;i++)segs.push([5,5]);
+**/
+
+function rint(x){return parseInt(Math.random()*x);}
+
+function start(){
+    dir = [0,1];
+    segs = [];
+    apple = [0,0];
+    for (var i=0;i<6;i++)segs.push([5,5]);
+    newApple();
+}
+
+function step(){
+    var [x,y] = segs[0];
+    segs = [[x+dir[0],y+dir[1]]].concat(segs);
+    segs.pop();
+    if (segs[0][0]<0)segs[0][0] = 19;
+    if (segs[0][1]<0)segs[0][1] = 19;
+    if (segs[0][0]>19)segs[0][0] = 0;
+    if (segs[0][1]>19)segs[0][1] = 0;
+    if (segs[0][0] == apple[0] && segs[0][1] == apple[1]){
+        segs.push(segs.slice(-1)[0]);
+        newApple();
+    }
+    for (var i=1;i<segs.length;i++){
+        if (segs[i][0] == segs[0][0] && segs[i][1] == segs[0][1]){
+            die();
+        }
+    }
+    draw();
+}
+
+function draw(){
+  ctx.fillStyle = 'rgb(255,255,255)';
+  ctx.fillRect(0,0,300,300);
+  ctx.fillStyle = 'rgb(0,255,0)';
+  [ctx.fillRect(x*10,y*10,10,10) for each([x,y] in segs.slice(1)) if (typeof(x)!='undefined' && typeof(y)!='undefined')];
+  var [x,y] = segs[0];
+  ctx.fillStyle = 'rgb(0,100,0)';
+  /*ctx.fillRect(x*10,y*10,10,10);*/
+  drawHead()
+  var [x,y] = apple;
+  ctx.fillStyle = 'rgb(255,0,0)';
+  ctx.fillRect(x*10,y*10,10,10);
+}
+
+function drawHead(){
+    ctx.beginPath();
+    var [x,y] = segs[0];
+    var [dx,dy] = dir;
+    if (dx==0 && dy==1){
+        ctx.moveTo(x*10,y*10);
+        ctx.bezierCurveTo(x*10,(y+1.2)*10,(x+1)*10,(y+1.2)*10,(x+1)*10,y*10);
+        ctx.fill();
+    }else if (dx==0 && dy==-1){
+        ctx.moveTo(x*10,(y+1)*10);
+        ctx.bezierCurveTo(x*10,(y-.2)*10,(x+1)*10,(y-.2)*10,(x+1)*10,(y+1)*10);
+        ctx.fill();
+    }else if (dx==1 && dy==0){
+        ctx.moveTo(x*10,y*10);
+        ctx.bezierCurveTo((x+1.2)*10,y*10,(x+1.2)*10,(y+1)*10,x*10,(y+1)*10);
+        ctx.fill();
+    }else if (dx==-1 && dy==0){
+        ctx.moveTo((x+1)*10,y*10);
+        ctx.bezierCurveTo((x-.2)*10,y*10,(x-.2)*10,(y+1)*10,(x+1)*10,(y+1)*10);
+        ctx.fill();
+    }else{
+    ctx.fillRect(x*10,y*10,10,10);
+    }
+}
+
+function newApple(){
+    apple = [rint(20),rint(20)];
+}
+
+function die(){
+    clearInterval(tm);
+    setTimeout(function(){
+        start();
+        tm = setInterval(step,100);
+    },2000);
+}
+
+document.addEventListener('keydown',function(e){
+  if (e.keyCode==37)dir=[-1,0];
+  if (e.keyCode==38)dir=[0,-1];
+  if (e.keyCode==39)dir=[1,0];
+  if (e.keyCode==40)dir=[0,1];
+},true);
+
+start();
+
+var tm = setInterval(step,100);
+
+</script>
+
+</body>
+</html>

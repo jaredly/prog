@@ -1,0 +1,40 @@
+<html>
+<head>
+<title>Pandora</title>
+</head>
+<body>
+<input id='l1'/><br/>
+<input id='l2'/><br/>
+<input id='l3'/><br/>
+<input id='l4'/><br/>
+<input id='l5'/><br/>
+<input id='l6'/><br/>
+<div id='res'>hi</div>
+<script>
+function $(e){return document.getElementById(e);}
+function fact(i){
+    if (i>0)return i+fact(i-1);
+    return i;
+}
+function recalc(e){
+    var total = 0;
+    var wt = 0;
+    for (var i=6;i>0;i--){
+        var n = parseFloat($('l'+i).value||'0');
+        //console.log(n,$('l'+i).value,!$('l'+i).value);
+        total += (n+.091)*fact(i);
+        if (!$('l'+i).value){
+            $('l'+i).style.backgroundColor = 'white';
+            continue;
+        }
+        if (n*11<wt) $('l'+i).style.backgroundColor = 'red';
+        else $('l'+i).style.backgroundColor = 'lightgreen';
+        wt += n;
+    }
+    $('res').innerHTML = total+75;
+}
+for (var i=1;i<7;i++){
+    $('l'+i).addEventListener('blur',recalc,true);
+}
+</script>
+</body>

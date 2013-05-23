@@ -1,0 +1,88 @@
+<html><body onload="load()">
+<script>
+function load(){
+i=0;
+imgs=new Array("http://images.google.com/images?q=tbn:N1OndBjogUwKgM:homework.uoregon.edu:8080/dchat/images/cow.gif",
+"http://tbn0.google.com/images?q=tbn:rnYoI1ZQ_e0u6M:http://www.2dvalley.com/gallery/albums/Miscellaneous/cow.jpg",
+"http://www.wayodd.com/funny-pictures2/funny-pictures-cow-jumping-aqY.jpg",
+"http://tbn0.google.com/images?q=tbn:iXwpo2miuQ9zcM:http://www.cs.cmu.edu/~yke/photoqual/results/cow/cow-nose.jpg")
+
+rnd=new Array(circles,smallsquares,bigsquares,fade)
+
+//imgs=new Array("http://developer.mozilla.org/wiki-images/en/1/1a/Canvas_rhino.jpg","http://icons.imeem.com/YTwC5o.jpg?w=50","http://icons.imeem.com/orud0k.jpg?w=50");
+img=0
+
+if (!document.getElementById("canv")){
+c=document.body.appendChild(document.createElement("canvas"));
+c.id="canv"
+c.height=300
+c.width=300
+ctx=c.getContext('2d');
+ctx.fillStyle="black"
+ctx.save()
+}
+
+function fade(i){
+    ctx.globalAlpha=0.2;
+    ctx.drawImage(im,0,0,300,300);
+}
+
+function circles(i){
+    ctx.beginPath()
+    for (var e=0;e<20;e++){
+        for (var b=0;b<20;b++){
+            ctx.moveTo(e*20,b*20);
+            ctx.arc(e*20,b*20,i,0,Math.PI*2, 0);
+        }
+    }
+    ctx.clip()
+    ctx.drawImage(im,0,0,300,300);
+}
+
+function square(x,y,wh){
+    ctx.moveTo(x-wh,y-wh)
+    ctx.lineTo(x+wh,y-wh)
+    ctx.lineTo(x+wh,y+wh)
+    ctx.lineTo(x-wh,y+wh)
+}
+
+function squares(x,y,i){
+    ctx.beginPath()
+    for (var e=0;e<x;e++){
+        for (var b=0;b<y;b++){
+            //ctx.moveTo(e*x,b*y);
+            square(e*(300/x)+150/x,b*(300/y)+150/y,i*(10/x))
+        }
+    }
+    ctx.clip()
+    ctx.drawImage(im,0,0,300,300);
+}
+function smallsquares(i){
+    squares(20,20,i)
+}
+function bigsquares(i){
+    squares(5,5,i)
+}
+
+im=new Image()
+im.src=imgs[img]
+
+clipfunc=fade//rnd[Math.floor(Math.random()*3)]
+
+function dr(){
+    ctx.restore()
+    ctx.save()
+    
+    clipfunc(i)
+    i+=1;
+    if (i>20){img+=1
+        im.src=imgs[img]
+        if (img+1==imgs.length){img=-1}
+        i=0
+        clipfunc=fade;//rnd[Math.floor(Math.random()*3)]
+        setTimeout(dr,1000);
+        return
+    }
+    setTimeout(dr,50);
+}dr()
+}</script></body></html>

@@ -1,0 +1,16 @@
+#sidebar {
+    width:20%;
+    height:100%;
+    //border:2px inset black;
+    float:left;
+    background-color: #666;
+}
+#window {
+    width:80%;
+    height:100%;
+    float:right;
+    background-color: #aaa;
+}
+body {
+    margin:0;
+}

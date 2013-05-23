@@ -1,0 +1,162 @@
+<html>
+<head>
+    <title>Pascal's Triangle</title>
+    <link rel='stylesheet' href='index.css'/>
+    <script src='/prog/js/lib/dom.inc.js'></script>
+    <script src="/prog/js/lib/math.inc.js"></script>
+    <script src='index.js'></script>
+    <script src='../../facebook/logger.js'></script>
+</head>
+<body>
+<style>#logger {
+    width:300px;
+    height:200px;
+    position:fixed;
+    bottom:0px;
+    right:0px;
+    opacity:0.5;
+    background-color:black;
+    color:white;
+    padding:15px;
+    overflow:auto;
+}
+#logger div {
+    cursor:pointer;
+    padding:3px 5px;
+}
+#logger div.obj > span {
+    text-decoration:underline;
+}
+#logger div div {
+    padding-left:10px;
+}
+#logger div.obj div {
+    text-decoration:none;
+}
+#logger div.obj span:hover {
+    background-color:white;
+    color:black;
+}
+#clearlog {
+    height:10px;
+    cursor:pointer;
+}
+#clearlog:hover {
+    background-color:white;
+}</style>
+<div id='logger'><div id='clearlog'></div></div>
+<canvas id='canv' width='3000px' height='3000px'></canvas>
+<script>
+//console={log:function(){}};
+
+function dz(x,z){return x*(1/(z+1));}//Math.pow(1.5,-z+1)
+function dp(x,y,z){
+    return [c[0]+dz(x-c[0],z),c[1]+dz(y-c[1],z)];
+}
+
+var psc = [[1],[1,1]];
+var c = [200,200];
+var horiz = 0;
+var vert = 0;
+var size = 120;
+
+function next(ar){
+    var nw = [1];
+    var last = ar.slice(-1)[0];
+    for (var i=0;i<last.length-1;i++){
+        nw.push(last[i]+last[i+1]);
+    }
+    nw.push(1);
+    ar.push(nw);
+}
+for (var i=0;i<100;i++){
+    next(psc);
+}
+
+
+function isprime(x){
+    for (var i=2;i<x;i++){
+        if (x%i==0)return false;
+    }
+    return true;
+}
+
+function issquare(x){return Math.sqrt(x)%1==0;}
+
+function iseven(x){return x%2==0;}
+
+var canv = $('canv');
+var ctx = canv.getContext('2d');
+
+function calc_pascals(psc){
+    
+    ctx.font = 10+'px'
+    
+    var w = 5;
+    var rects = [];
+    for (var y=0;y<psc.length;y++){
+        for (var x=0;x<psc[y].length;x++){
+            if (psc[y][x]%2==0){//issquare(psc[y][x])){
+                rects.push([x+(psc.length-y+1)/2,y+1/2,psc[y][x]%2+1,"green"]);
+                
+            }
+            if (psc[y][x]%3==0){
+                rects.push([x+(psc.length-y+1)/2,y+1/2,4,"red"]);
+            }
+        }
+    }
+    return rects;
+}
+horiz = vert = 0;
+psrects = calc_pascals(psc);
+
+function draw(rects){
+    ctx.clearRect(0,0,500,500);
+    
+    
+    for (var i=0;i<psrects.length;i++){
+        var [x,y,z,color] = psrects[i];
+        ctx.fillStyle = color;
+        ctx.fillRect(c[0]+x*5,c[1]+y*5,4.5,4.5);
+    }
+}
+
+/*function update(){
+    ctx.clearRect(0,0,500,500);
+    var all = [];
+    for (var i=0;i<psrects.length;i++){
+        var [x,y,z,color] = psrects[i];
+        //var z = 1;
+        var [nx,nz] = rot_around([x-psc.slice(-1)[0].length/2,z-1],[0,0],horiz);
+        var [ny,nz] = rot_around([y-psc.length/2,nz],[0,0],vert);
+        //all.push([nz,nx,ny,psrects[i],alpha]);
+        ctx.fillStyle = color;
+        ctx.fillRect(c[0]+nx*5,c[1]+ny*5,4.5,4.5);
+    }
+}
+    var cpos = findPos(canv);
+    var mdown = false;
+    document.addEventListener('mousedown',function(e){
+        mdown = ePos(e,cpos);
+    },false);
+    document.addEventListener('mouseup',function(e){
+        mdown = false;
+    },false);
+    document.addEventListener('mousemove',function(e){
+        if (mdown){
+            var pos = ePos(e,cpos);
+            horiz -= (mdown[0]-pos[0])/100;
+            vert -= (mdown[1]-pos[1])/100;
+            mdown = pos;
+            update();
+        }
+    },false);*/
+
+
+draw(psc);
+//update()
+
+</script>
+
+</body>
+</html>

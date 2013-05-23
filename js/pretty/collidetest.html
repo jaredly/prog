@@ -1,0 +1,114 @@
+<html>
+<head>
+    <title>Test</title>
+    <script src="/prog/js/lib/dom.inc.js"></script>
+    <script src="/prog/js/lib/math.inc.js"></script>
+    <script src="/prog/js/lib/canvas.inc.js"></script>
+</head>
+<body>
+    <script>
+    var c = document.body.appendChild(cE("canvas"));
+    
+    function Line(parent,pos,len,ang,color){
+        var that = Moveable(parent,pos);
+        var pts = [[-len/2,0],[len/2,0]];
+        that.get_points = function(){
+            return morph_poly(pts,that.pos,ang);
+        }
+        that.draw = function(ctx){
+            ctx.strokeStyle = color || "black";
+            ctx.beginPath();
+            draw_polygon(ctx,that.get_points());
+            ctx.stroke();
+        }
+        that.step = function(){
+            ang+=Math.PI/40;
+        }
+        that.event = function(e){
+            if (e.type=="mousemove" && color=="blue"){
+                var [x,y] = e.pos;
+                //pts = [[x-len/2,y],[x+len/2,y]];
+                that.pos = [x,y];
+            }
+        }
+        return that;
+    }
+    
+    function Circle(parent,pos,rad,color){
+        var that = Moveable(parent,pos);
+        that.rad = rad;
+        that.draw = function(ctx){
+            ctx.strokeStyle = color || 'black';
+            ctx.beginPath();
+            
+        }
+        that.step = function(){
+            
+        }
+        that.event = function(e){}
+    }
+    
+    function Tester(parent){
+        var that = Sprite(parent,[0,0]);
+        var epos = [0,0];
+        that.step = function(){
+            var l1 = parent.objects[0].get_points();
+            var l2 = parent.objects[1].get_points();
+            if (line2line(l1[0],l1[1],l2[0],l2[1])){
+                parent.bgc = "green";
+            }else{
+            //    console.log(l1[0],l1[1],l2[0],l2[1]);
+            //if (line2circle(l1[0],l1[1],epos,10))
+            //    parent.bgc = "lightgreen";
+                parent.bgc = "white";}
+            
+            var crc = parent.objects[4];
+            if (line2circle(l2[0],l2[1],crc.pos,crc.r))
+                crc.color = 'red';
+            else
+                crc.color = 'orange';
+        }
+        that.event =function(e){
+            if (e.type=="mousemove"){
+                epos = e.pos;
+            }
+        }
+        return that;
+    }
+    
+    function CollideRect(parent){
+        var that = Sprite(parent,[10,10]);
+        var col = 0;
+        that.draw = function(ctx){
+            ctx.fillStyle = ["red","green"][col];
+            ctx.fillRect(0,0,100,100);
+        }
+        that.event = function(e){
+            if (e.type=="mousemove"){
+                if (rect2point(0,0,100,100,e.pos))col=1;
+                else col = 0;
+            }
+        }
+        return that;
+    }
+    
+    function CollideTest(node){
+        var that = Game(node,[300,300]);
+        that.fps=40;
+        that.initialize = function(){
+            that.objects = [];
+            that.objects.push(Line(that,[200,200],100,0,"red"));
+            that.objects.push(Line(that,[200,200],100,Math.PI/2,"blue"));
+            that.objects.push(Tester(that));
+            that.objects.push(CollideRect(that));
+            that.objects.push(Ball(that,[200,200],30,[0,0],"orange"));
+        }
+        
+        return that;
+    }
+    var ct = CollideTest(c)
+    ct.run();
+    
+    </script>
+</body>
+</html>

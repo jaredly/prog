@@ -1,0 +1,60 @@
+<html>
+<head>
+    <link rel="shortcut icon" href="favicon.png" type="image/png">
+    <link rel="icon" href="favicon.png" type="image/png">
+    <title>Flickr Puzzle</title></head>
+<body>
+
+<style>
+canvas {
+    position:absolute;
+    top:50%;
+    left:50%;
+}
+body {
+    background-color: black;
+}
+#showb, #check, #score, div.sizes div {
+    background-color:#555555;
+    border:2px solid #333333;
+    display:inline;
+    font-family:sans-serif;
+    padding:2px 5px;
+}
+div.sizes div img {
+    margin-bottom: -4;
+}
+#showb, #check, div.sizes div {
+    cursor:pointer;
+}
+.sizes {
+    position:absolute;
+    top:8px;
+    right:0px;
+}
+#show {
+    position:absolute;
+    top:50%;
+    left:50%;
+}
+</style>
+
+<canvas id="canv"></canvas>
+<img id="show" style="visibility:hidden;position:absolute"/>
+<div id="showb">Show</div>
+<div onclick="check_color()" id="check">Check</div>
+<div id="score">Clicks: 0</div>
+<div class="sizes">
+<div onclick="setHard()">Hard</div>
+<div onclick="setMed()">Medium</div>
+<div onclick="setEasy()">Easy</div>
+<div onclick="reload()"><img src="reload_sm.png"></div>
+</div>
+
+
+<!--script src="http://me.eae.net/stuff/iecanvas/canvas.js"></script-->
+<script src="ajax.js"></script>
+<script src="main.js"></script>
+
+</body>
+</html>

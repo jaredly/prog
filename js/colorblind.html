@@ -1,0 +1,33 @@
+<html><head><title>ColorBlind</title>
+<script src="/prog/js/lib/dom.inc.js"></script>
+</head>
+<body>
+<style>
+body{margin:0;padding:0;}
+</style>
+<canvas id="canv"></canvas>
+<script>
+var ctx = document.getElementById('canv').getContext('2d');
+document.getElementById('canv').width=300;
+document.getElementById('canv').height=300;
+ctx.fillStyle="green"
+ctx.fillRect(0,0,300,300);
+ctx.globalAlpha = .001;
+var pos = [25+Math.random()*220,25+Math.random()*220];
+function nxt(){
+    ctx.globalAlpha += .001;
+    ctx.fillStyle="black";
+    ctx.fillRect(pos[0],pos[1],25,25);
+    setTimeout(nxt,1000);
+}
+setTimeout(nxt, Math.random()*1000+3000);
+document.onmousedown=function(e){
+    var ep = mousePos(e);
+    if (ep[0]>pos[0] && ep[0]<pos[0]+25 && ep[1]>pos[1] && ep[1]<pos[1]+25)
+        alert(ctx.globalAlpha)
+    
+}
+</script>
+
+</body>
+</html>

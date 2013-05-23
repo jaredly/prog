@@ -1,0 +1,72 @@
+<html>
+<head>
+<title>Twinkle</title>
+<script src="/prog/js/lib/math.inc.js"></script>
+</head>
+<body>
+<canvas id="screen" width="800" height="400"/>
+
+<script>
+function chain(x){
+    return function(){ return x.apply(this,arguments)||this; };
+}
+CanvasRenderingContext2D.prototype.set = function( what, to )
+{this[what] = to;}
+
+for( chainThat in {set:1,clearRect:1,save:1,translate:1,rotate:1,drawImage:1,scale:1,restore:1,fillRect:1,moveTo:1,lineTo:1,beginPath:1,closePath:1,stroke:1,fill:1,arc:1} )
+{
+    CanvasRenderingContext2D.prototype[chainThat] = chain( CanvasRenderingContext2D.prototype[chainThat] );
+}
+var c = document.getElementById("screen").getContext("2d").set('globalAlpha',.1);
+
+function linesin(c,t,width,xpos,height,period,xoff){
+    if (Math.abs(height/2-parseInt((t-width)/width)*5)<20)return;
+    var x1 = t%width-period/3.2+xoff;
+    var x2 = x1+period/1.6;
+    var y1 = Math.sin(x1/(period/2)*Math.PI)*(height/2-parseInt((t-width)/width)*5) + xpos;
+    var y2 = Math.sin(x2/(period/2)*Math.PI)*(height/2-parseInt((t-width)/width)*5) + xpos;
+    c.beginPath().moveTo(x1,y1).lineTo(x2,y2).stroke();
+}
+
+var i = 0;
+var d = 1;
+function doone(){
+    c.strokeStyle="blue";
+    for (var e=400*i;e<400+400*i;e+=2){
+        linesin(c,e,800,160,100,80,0);
+    }
+    function sin(x){
+        x = x/(80/2)*Math.PI;
+        s = Math.sin(x);
+        return s*(100/2) + 160;
+    }
+    /*****
+    c.beginPath();
+    c.lineWidth = 3;
+    c.moveTo(0,sin(0));
+    for (var e=0;e<800;e+=2){
+        var y = sin(e);
+        c.lineTo(e,y);
+    }
+    c.stroke();
+    *****/
+    i++;
+}
+
+var t = 0;
+(function(){
+    t+=2;
+    x1 = t%800-25;
+    x2 = x1+50;
+    y1 = Math.sin(x1/40*Math.PI)*(50-(t-800)/800*5) + 100;
+    y2 = Math.sin(x2/40*Math.PI)*(50-(t-800)/800*5) + 100;
+    c.beginPath().moveTo(x1,y1).lineTo(x2,y2).stroke();
+    
+    setTimeout(arguments.callee,10);
+});
+
+document.getElementById("screen").onclick = doone;
+
+</script>
+</body>
+</html>

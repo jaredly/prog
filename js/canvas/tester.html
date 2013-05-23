@@ -1,0 +1,53 @@
+<html>
+<head>
+    <title>Canvas Tester</title>
+    <style>
+        #display div {
+        }
+        #display {
+            background-color: #f0fefe;
+            border: 2px solid darkblue;
+            height: 50%;
+            overflow: auto;
+        }
+        #entry {
+            border: none;
+            width: 100%;
+            background-color: #f0fefe;
+            padding-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canv"></canvas>
+    <div id="display">
+    <input id="entry">
+    </div>
+    <script>
+    function $(e){return document.getElementById(e);}
+    var canv = $("canv");canv.width=window.innerWidth;canv.height=window.innerHeight/2-40;
+    var ctx = canv.getContext("2d");
+    var entry = $("entry");
+    var display = $("display");
+    
+    
+    function enter(v,x){
+        if (typeof(x)=="undefined")x="";
+        var that = document.createElement("div");
+        console.log(that,display,entry);
+        display.insertBefore(that,entry);
+        that.innerHTML = ">>> "+v+"<div class='result'>"+x+"</div>";
+    }
+    
+    entry.addEventListener("keypress",function(e){
+        if (e.keyCode==13){
+            try{
+                enter(this.value,window.eval(this.value));
+            }catch(e){
+                enter(this.value,e.message);
+            }
+            this.value = "";
+        }
+    },false);
+    </script>
+</body>

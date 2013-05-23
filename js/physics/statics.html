@@ -1,0 +1,325 @@
+<html>
+<head>
+<title>Rigid Bodies</title>
+<script src="/prog/js/lib/math.inc.js"></script>
+<script src="/prog/js/lib/classy_js.js"></script>
+<script src="/prog/js/lib/dom.inc.js"></script>
+<script src="/prog/facebook/logger.js"></script>
+<link rel="stylesheet" href="/prog/facebook/index.css"/>
+</head>
+<body>
+
+<style>
+body{padding:0;margin:0;background-color:white}
+canvas{border:1px solid black;}
+</style>
+
+<canvas id="screen"></canvas>
+
+<div id='logger'><div id='clearlog'></div></div>
+
+<script>
+
+if (typeof(console)=='undefined')
+    var console = {log:log};
+
+var Vector = Class([],{
+    __init__:function(self,t,m){
+        self.t=t;
+        self.m=m;
+    },
+    frompos:function(x,y){
+        if (x.length){return Vector.frompos(y[0]-x[0],y[1]-x[1]);}
+        return Vector(Math.atan2(y,x),dst(x,y));
+    },
+    x:function(self){
+        return Math.cos(self.t)*self.m;
+    },
+    y:function(self){
+        return Math.sin(self.t)*self.m;
+    },
+    pos:function(self,c){
+        if (!c)c=[0,0];
+        return [c[0]+self.x(),c[1]+self.y()];
+    },
+    add:function(self,other){
+        var x = self.x()+other.x();
+        var y = self.y()+other.y();
+        return Vector.frompos(x,y);
+    },
+    cross:function(self,other){
+        return self.m*other.m*Math.sin(other.t-self.t);
+    },
+    dot:function(self,other){
+        return self.x()*other.x()+self.y()*other.y();
+    },
+    mul:function(self,num){
+        return Vector(self.t,self.m*num);
+    }
+});
+
+var Game = Class([],{
+   __init__:function(self,node,size){
+       self.canv = node;
+       self.ctx = self.canv.getContext('2d');
+       self.canv.width = size[0];
+       self.canv.height = size[1];
+       self.size = size;
+       self.running = false;
+       self.objects = [];
+   },
+   pass:function(self,func){
+       for (var i=0;i<self.objects.length;i++){
+           self.objects[i][func].apply(self.objects[i],Array.prototype.slice.call(arguments,2));
+       }
+   },
+   event:function(self,e){
+       self.pass('event',e);
+   },
+   step:function(self){
+       self.pass('step');
+   },
+   draw:function(self){
+       self.ctx.clearRect(0,0,self.size[0],self.size[1]);
+       self.pass('draw',self.ctx);
+   },
+   loop:function(self){
+       if (!self.running)return false;
+       self.step();
+       self.draw();
+       setTimeout(self.loop,50);
+   },
+   start:function(self){
+       self.running = true;
+       document.body.addEventListener('mousemove',self.event,true);
+       document.body.addEventListener('mousedown',self.event,true);
+       document.body.addEventListener('mouseup',self.event,true);
+       document.body.addEventListener('click',self.event,true);
+       self.loop();
+   }
+});
+
+var draw = {
+    line:function(ctx,color,p1,p2,w){
+        ctx.strokeStyle = color;
+        ctx.lineWidth = w || 1;
+        ctx.beginPath();
+        ctx.moveTo(p1[0],p1[1]);
+        ctx.lineTo(p2[0],p2[1]);
+        ctx.stroke();
+    },
+    circle:function(ctx,color,c,r){
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(c[0],c[1]);
+        ctx.arc(c[0],c[1],r,0,Math.PI*2);
+        ctx.fill();
+    },
+    vector:function(ctx,color,c,v,m){
+        v = Vector(v.t,v.m*m);
+        if (v.m<0){v.t+=Math.PI;v.m*=-1;}
+        var f = v.pos(c);
+        draw.line(ctx,color,c,f);
+        draw.line(ctx,color,f,Vector(v.t+Math.PI+Math.PI/6,10).pos(f));
+        draw.line(ctx,color,f,Vector(v.t+Math.PI-Math.PI/6,10).pos(f));
+    }
+}
+
+var Body = Class([],{
+    __init__:function(self,parent,pts,cm,mass,sz){
+        self.parent = parent;
+        self.pts = pts;
+        self.cm = cm;
+        self.sz = sz;
+        self.v = Vector(0,0);
+        self.theta = 0;
+        self.omega = 0;
+        self.mass = mass;
+        self.vs = [];
+    },
+    get_pts:function(self){
+        return morph_poly(self.pts,self.cm,self.theta);
+    },
+    apply_force:function(self,force,pos){
+        if (pos==null)pos = self.cm;
+        self.v = self.v.add(Vector(force.t,force.m/self.mass));
+        if (pos==self.cm)
+            return;
+        var r = Vector.frompos(pos[0]-self.cm[0],pos[1]-self.cm[1]);
+        var cross = force.cross(r);
+        cross /= self.I();
+        self.omega -= cross;
+    },
+    step:function(self){
+        self.cm[0] += self.v.x();
+        self.cm[1] += self.v.y();
+        self.theta += self.omega;
+    },
+    collidepoint:function(self,pt){
+        var pts = self.get_pts();
+    },
+    I:function(self){
+        return self.mass * (self.sz[0]*self.sz[0] + self.sz[1]*self.sz[1]) / 12;
+    },
+    bounceline:function(self,p1,p2){
+        var npts = self.get_pts();npts=npts.concat([npts[0]]);
+        var bcoll = [0];
+        for (var i=0;i<npts.length-1;i++){
+            var coll = line2line(npts[i],npts[i+1],p1,p2);
+            if (coll){
+                var d = dst(self.cm,coll);
+                var t = angle_to(p1,p2)+Math.PI/2; // angle perpendicular to the line
+                if (Math.abs(t-angle_to(self.cm,coll))<Math.PI/2)
+                    t+=Math.PI;
+                if (d>bcoll[0])
+                    bcoll = [d, coll, t]
+                
+                /*
+                I = this.I();
+                
+                m = this.mass;
+                r = Vector.frompos(this.cm, coll);
+                w = this.omega;
+                wxr = Vector.frompos(-w * r.y(), w * r.x());
+                v = this.v
+                vp = v.add(wxr)
+                n = Vector(t,Vector(t,1).dot(vp))
+                e = 1
+                
+                j = -(1+e) * vp.dot(n) / ( 1/m + Math.pow(r.cross(n),2) / I );
+                
+                v_final = v.add(n.mul(j/m));
+                w_final = w + (r.cross(n.mul(j)))/I;
+                
+                console.log(m,r,w,wxr,v,vp,n,e,j,v_final,w_final);
+                
+                self.v = v_final;
+                self.omega = w_final;
+                /*
+                var tvel = self.v.add(rvel);
+                var relvel = Vector(t,1).dot(tvel);
+                normal = Vector(t,relvel);
+                
+                self.parent.running = false;
+                
+                //draw.line(self.parent.ctx,'green',self.cm,coll)
+                
+                draw.vector(self.parent.ctx,'green',self.cm,r,1);
+                draw.vector(self.parent.ctx,'orange',coll,rvel,5);
+                draw.vector(self.parent.ctx,'pink',coll,tvel,5);
+                draw.vector(self.parent.ctx,'blue',coll,self.v,5);
+                draw.vector(self.parent.ctx,'red',coll,normal,5);
+                /*
+                draw.line(self.parent.ctx,'red',coll,[coll[0]+tvel.x(),coll[1]+tvel.y()]);
+                draw.line(self.parent.ctx,'pink',coll,[coll[0]+rvel.x(),coll[1]+rvel.y()]);
+                draw.line(self.parent.ctx,'orange',coll,[coll[0]+normal.x(),coll[1]+normal.y()]);
+                draw.line(self.parent.ctx,'blue',coll,[coll[0]+self.v.x(),coll[1]+self.v.y()]);*
+                err;
+                
+                
+                
+                self.apply_force(normal,coll);
+                */
+                //console.log(relvel,normal,self.v);
+            }//console.log('no...',npts[i],npts[i+1],p1,p2);
+        }
+        if (bcoll[0])
+            self.collideline(bcoll[1],bcoll[2]);
+    },
+    collideline:function(self,pos,normal){
+        I = this.I();
+                    
+        m = this.mass;
+        r = Vector.frompos(this.cm, pos);
+        w = this.omega;
+        wxr = Vector.frompos(-w * r.y(), w * r.x());
+        v = this.v
+        vp = v.add(wxr)
+        n = Vector(normal,Vector(normal,1).dot(vp))
+        if (n.m>0)return;
+        e = .1;
+        
+        self.vs.push(['green',self.cm,r,1]);
+        self.vs.push(['orange',pos,wxr,5]);
+        self.vs.push(['pink',pos,vp,5]);
+        self.vs.push(['blue',pos,v,5]);
+        self.vs.push(['red',pos,n,5]);
+        
+        j = -(1+e) * vp.dot(n) / ( 1/m + Math.pow(r.cross(n),2) / I );
+                    
+        v_final = v.add(n.mul(j/m));
+        w_final = w + (r.cross(n.mul(j)))/I;
+                    
+        console.log(m,r,w,wxr,v,vp,n,e,j,v_final,w_final);
+                   
+        self.v = v_final;
+        self.omega = w_final;
+    }
+});
+
+var Block = Class([],{
+    __init__:function(self,parent,pos,size,mass){
+        self.body = Body(parent,_rect2pts(0,0,size[0],size[1]),pos,mass,size);
+        self.mp = false;
+        self.mdown = false;
+    },
+    step:function(self){
+        if (self.mp!=false && !(self.mp[0]==self.mdown[0] && self.mp[1]==self.mdown[1])){
+            var nwmd = rot_around(self.mdown,[0,0],self.body.theta);
+            nwmd[0]+=self.body.cm[0];nwmd[1]+=self.body.cm[1];
+            var addr = Vector.frompos(self.mp[0]-nwmd[0],self.mp[1]-nwmd[1]);
+            addr.m/=100;
+            self.body.apply_force(addr,nwmd);
+        }
+        self.body.bounceline([100,100],[100,500]);
+        self.body.bounceline([100,100],[500,100]);
+        self.body.bounceline([500,100],[500,500]);
+        self.body.bounceline([100,500],[500,500]);
+        self.body.step();
+    },
+    event:function(self,e){
+        if (e.type=='mousemove' && self.mp)
+            self.mp = mousePos(e);
+        else if (e.type=='mousedown'){
+            self.mdown = mousePos(e);
+            self.mp = mousePos(e);
+            self.mdown[0]-=self.body.cm[0];
+            self.mdown[1]-=self.body.cm[1];
+            self.mdown = rot_around(self.mdown,[0,0],-self.body.theta);
+        }else if (e.type=='mouseup')
+            self.mp = false;
+    },
+    draw:function(self,ctx){
+        ctx.fillStyle='lightgreen';
+        ctx.fillRect(100,100,400,400);
+        var pts = self.body.get_pts();
+        ctx.beginPath();
+        ctx.strokeStyle='black';
+        ctx.moveTo(pts[pts.length-1][0],pts[pts.length-1][1]);
+        for (var i=0;i<pts.length;i++)
+            ctx.lineTo(pts[i][0],pts[i][1]);
+        ctx.stroke();
+        ctx.strokeStyle = 'green';
+        if (self.mp){
+            ctx.beginPath();
+            var nwmd = rot_around(self.mdown,[0,0],self.body.theta);
+            nwmd[0]+=self.body.cm[0];nwmd[1]+=self.body.cm[1];
+            ctx.moveTo(nwmd[0],nwmd[1]);
+            ctx.lineTo(self.mp[0],self.mp[1]);
+            ctx.stroke();
+        }
+        for (var i=0;i<self.body.vs;i++){console.log(self.body);console.log(self.body.vs);
+            draw.vector(ctx,self.body.vs[i][0],self.body.vs[i][1],self.body.vs[i][2],self.body.vs[i][3]);
+        }
+    }
+});
+
+var g = Game($('screen'),[600,600]);
+var b = Block(g,[200,200],[20,100],10);
+g.objects.push(b);
+g.start();
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,377 @@
+<html>
+<head>
+<title>Mobile Simulator</title>
+<script src="include.js"></script>
+<script src='classy_js.js'></script>
+</head>
+<body>
+<style>
+canvas{
+    position:relative;
+    top:0px;
+    left:0px;
+}
+* {
+    padding:0;
+    margin:0;
+}
+</style>
+<canvas id='pygame.js' width='500px' height='500px'></canvas><div id='status'></div>
+<div id='rods'></div>
+
+<script>
+function $(e){return document.getElementById(e);}
+
+var Rect = Class([],{
+    __init__:function(self,x,y,w,h){
+        self.x=x;
+        self.y=y;
+        self.w=w;
+        self.h=h;
+    },
+    colliderect:function(self,other){
+        var xs,ys;
+        if (self.x<other.x) xs = (other.x-self.x)<self.w;
+        else xs = (self.x-other.x)<other.w;
+        if (self.y<other.y) ys = (other.y-self.y)<self.h;
+        else ys = (self.y-other.y)<other.h;
+        return xs && ys;
+    },
+    collidepoint:function(self,[x,y]){
+        return (self.x<=x && x<=self.x+self.w && self.y<=y && y<=self.y+self.h);
+    },
+    pts:function(self){
+        return [self.x,self.y,self.w,self.h];
+    },
+    move:function(self,[x,y]){
+        return Rect(self.x+x,self.y+y,self.w,self.h);
+    },
+    move_ip:function(self,[x,y]){
+        self.x+=x;
+        self.y+=y;
+    }
+});
+
+function fact(x){
+    if (x>0)return (x+fact(x-1));
+    return x;
+}
+
+function rgb2c([r,g,b]){return 'rgb('+r+','+g+','+b+')';}
+
+var Ctx = Class([],{
+    __init__:function(self,ctx){
+        self.ctx = ctx;console.log(ctx);
+    },
+    line:function(self,[x,y],[a,b],color){
+        self.ctx.strokeStyle = rgb2c(color);
+        self.ctx.beginPath();
+        self.ctx.moveTo(x,y);
+        self.ctx.lineTo(a,b);
+        self.ctx.stroke();
+    },
+    line2:function(self,[x,y],[a,b],color){
+        self.ctx.strokeStyle = rgb2c(color);
+        self.ctx.beginPath();
+        self.ctx.moveTo(x,y);
+        self.ctx.lineTo(x+a,y+b);
+        self.ctx.stroke();
+    },
+    rect:function(self,[x,y,a,b],color){
+        self.ctx.fillStyle = rgb2c(color);
+        self.ctx.fillRect(x,y,a,b);
+    },
+    fill:function(self,color){
+        self.ctx.fillStyle = rgb2c(color);
+        self.ctx.fillRect(0,0,500,500);
+    },
+    circle:function(self,[x,y],r,color){
+        self.ctx.fillStyle = rgb2c(color);
+        self.ctx.beginPath();
+        self.ctx.arc(x,y,r,0,Math.PI*2,true);
+        self.ctx.fill();
+    }
+});
+
+var canv = $('pygame.js');
+var ctx = Ctx(canv.getContext('2d'));
+var masses = [];
+var rods = [];
+
+function dist([x,y],[a,b]){
+    return Math.sqrt((a-x)*(a-x)+(b-y)*(b-y));
+}
+
+var Rod = Class([],{
+    __init__:function(self,[x,y],width,mass){
+        self.realwidth = width*0.3048;
+        self.rect = Rect(x,y,width*25,5);
+        self.mass = mass;
+        self.moving = false;
+        self.realr = self.realwidth/2;
+        self.r = self.realr/.3048*25;
+        self.top = false;
+    },
+    totalmass:function(self){
+        var m = self.mass;
+        if (self.mass1)m+=self.mass1.totalmass();
+        if (self.mass2)m+=self.mass2.totalmass();
+        return m;
+    },
+    toppos:function(self){return [self.rect.x+self.r,self.rect.y-15];},
+    settoppos:function(self,[x,y]){
+        self.rect.x = x-self.r;
+        self.rect.y = y+15;
+        if (self.mass1)self.mass1.settoppos(self.m1pos());
+        if (self.mass2)self.mass2.settoppos(self.m2pos());
+    },
+    m1pos:function(self){return [self.rect.x,self.rect.y+15];},
+    m2pos:function(self){return [self.rect.x+self.rect.w,self.rect.y+15];},
+    draw:function(self){
+        if (self.realr<.1 || self.realwidth-self.realr<.1)
+            ctx.rect(self.rect.pts(),[255,0,0]);
+        else
+            ctx.rect(self.rect.pts(),[0,0,255]);
+        ctx.line2([self.rect.x,self.rect.y],[0,15],[0,0,0]);
+        ctx.line2([self.rect.x+self.rect.w,self.rect.y],[0,15],[0,0,0]);
+        ctx.line2([self.rect.x+self.r,self.rect.y],[0,-15],[0,0,0]);
+        
+        ctx.circle([self.rect.x,self.rect.y+15],3,[0,0,0]);
+        ctx.circle([self.rect.x+self.rect.w,self.rect.y+15],3,[0,0,0]);
+        ctx.circle([self.rect.x+self.r,self.rect.y-15],3,[0,0,0]);
+    },
+    log:function(self){
+        $('status').innerHTML = 'Rod:<br>Width:'+self.realwidth+'<br>Distance:'+self.realr+'<br>Total Mass:'+self.totalmass()+'<br>Score: '+(self.getscore()+75);
+    },
+    getscore:function(self,lev){
+        lev = lev || 1;
+        var masses = [[],[],[],[],[],[]];
+        var rods = [];
+        var score = 0;
+        var heremass = self.mass;
+        if (self.mass1){
+            if (self.mass1._class==Mass)
+                heremass += self.mass1.totalmass();
+            else
+                score += self.mass1.getscore(lev+1);
+        }
+        if (self.mass2){
+            if (self.mass2._class==Mass)
+                heremass += self.mass2.totalmass();
+            else
+                score += self.mass2.getscore(lev+1);
+        }
+        score += heremass*fact(lev);
+        return score;
+    },
+    event:function(self,e){
+        if (e.type=="mousedown"){
+            var [x,y] = mousePos(e);
+            if (e.button==2 && self.rect.collidepoint([x,y])){
+                self.log();
+                return;
+            }
+            if (dist([x,y],self.toppos())<10){self.log();
+                self.moving = 1;
+                if (self.top){
+                    if (self.top.mass1==self){
+                        self.top.mass1=false;
+                        self.top.calculate();
+                        self.top = false;
+                    }else if (self.top.mass2==self){
+                        self.top.mass2=false;
+                        self.top.calculate();
+                        self.top = false;
+                    }
+                }
+            }
+        }else if (e.type=='mousemove'){
+            var [x,y] = mousePos(e);
+            if (self.moving==1){
+                var dx = (x-self.r)-self.rect.x;
+                var dy = (y+15)-self.rect.y;
+                self.rect.x = x-self.r;
+                self.rect.y = y+15;
+                if (self.mass1)self.mass1.settoppos(self.m1pos());
+                if (self.mass2)self.mass2.settoppos(self.m2pos());
+            }
+        }else if (e.type=='mouseup'){
+            self.moving = false;
+            for (var i=0;i<rods.length;i++){
+                var r = rods[i];
+                if (dist(r.m1pos(),self.toppos())<10){
+                    r.mass1 = self;
+                    self.top = r;
+                    r.calculate();
+                    var pos = r.m1pos();
+                    self.settoppos(pos);
+                }else if (dist(r.m2pos(),self.toppos())<10){
+                    r.mass2 = self;
+                    self.top = r;
+                    r.calculate();
+                    var pos = r.m2pos();
+                    self.settoppos(pos);
+                }
+            }
+        }
+    },
+    calculate:function(self){
+        var torques = self.mass*(self.realwidth/2);
+        var masses = self.mass;
+        if (self.mass1)
+            masses += self.mass1.totalmass();
+        if (self.mass2){
+            torques += self.mass2.totalmass()*self.realwidth;
+            masses += self.mass2.totalmass();
+        }
+        self.realr = torques/masses;
+        self.r = self.realr/.3048*25;
+        if (self.top){
+            self.top.calculate();
+            if (self.top.mass1==self)
+                self.settoppos(self.top.m1pos());
+            else if (self.top.mass2==self)
+                self.settoppos(self.top.m2pos());
+        }
+    }
+});
+
+var Mass = Class([],{
+    __init__:function(self,[x,y],width,mass){
+        self.rect = Rect(x,y,width,width);
+        self.mass = mass;
+        self.top = false;
+        self.bottom = false;
+    },
+    btpos:function(self){return [self.rect.x+self.rect.w/2,self.rect.y+self.rect.h];},
+    totalmass:function(self){
+        var m = self.mass;
+        if (self.bottom)
+            m+=self.bottom.totalmass();
+        return m;
+    },
+    toppos:function(self){return [self.rect.x+self.rect.w/2,self.rect.y-15];},
+    settoppos:function(self,[x,y]){
+        self.rect.x = x-self.rect.w/2;
+        self.rect.y = y+15;
+        if (self.bottom)
+            self.bottom.settoppos(self.btpos());
+    },
+    draw:function(self){
+        ctx.rect(self.rect.pts(),[0,0,255]);
+        ctx.line2([self.rect.x+self.rect.w/2,self.rect.y],[0,-15],[0,0,0]);
+        ctx.circle(self.toppos(),3,[0,0,0]);
+        ctx.circle(self.btpos(),3,[0,0,0]);
+    },
+    calculate:function(self){
+        if (self.top)self.top.calculate();
+    },
+    log:function(self){
+        $('status').innerHTML = 'Mass:<br>Mass:'+self.mass+'<br>Bottom:'+(self.bottom?'yes':'no')+'<br>Total Mass:'+self.totalmass();
+    },
+    event:function(self,e){
+        if (e.type=="mousedown"){
+            var [x,y] = mousePos(e);//console.log(e.button,e.which);
+            if (e.button==2 && self.rect.collidepoint([x,y])){console.log('yes');
+                self.log();
+                return;
+            }
+            //self.log();
+            if (dist([x,y],self.toppos())<10){self.log();
+                self.moving = 1;
+                if (self.top){
+                    if (self.top.mass1==self){
+                        self.top.mass1=false;
+                        self.top.calculate();
+                        self.top = false;
+                    }else if (self.top.mass2==self){
+                        self.top.mass2=false;
+                        self.top.calculate();
+                        self.top = false;
+                    }else if (self.top.bottom==self){
+                        self.top.bottom = false;
+                        self.top.calculate();
+                        self.top = false;
+                    }
+                }
+            }
+        }else if (e.type=='mousemove'){
+            var pos = mousePos(e);
+            if (self.moving==1){
+                self.settoppos(pos);
+            }
+        }else if (e.type=='mouseup'){
+            self.moving = false;
+            self.top = false;
+            for (var i=0;i<rods.length;i++){if (self.top)break;
+                var r = rods[i];
+                if (dist(r.m1pos(),self.toppos())<10){
+                    r.mass1 = self;
+                    self.top = r;
+                    r.calculate();
+                    var pos = r.m1pos();
+                    self.settoppos(pos);
+                }else if (dist(r.m2pos(),self.toppos())<10){
+                    r.mass2 = self;
+                    self.top = r;
+                    r.calculate();
+                    var pos = r.m2pos();
+                    self.settoppos(pos);
+                }
+            }
+            for (var i=0;i<masses.length;i++){if (self.top)break;
+                var m = masses[i];
+                if (dist(self.toppos(),m.btpos())<10){
+                    m.bottom = self;
+                    self.top = m;
+                    m.calculate();
+                    self.settoppos(m.btpos());
+                }
+            }
+            //if (self.top)self.log();
+        }
+    }
+});
+
+function events(e){
+    e.preventDefault();
+    for (var i=0;i<masses.length;i++){var m=masses[i];
+        m.event(e);
+    }
+    for (var i=0;i<rods.length;i++){var r=rods[i];
+        r.event(e);
+    }
+    return false;
+}
+
+function update(){
+    ctx.fill([255,255,255]);
+    for (var i=0;i<rods.length;i++){var r=rods[i];
+        r.draw();
+    }
+    for (var i=0;i<masses.length;i++){var m=masses[i];
+        m.draw();
+    }
+}
+for (var i=0;i<3;i++)
+    rods.push(Rod([15,40+35*i],4,.091));
+for (var i=0;i<3;i++)
+    rods.push(Rod([15,40+35*(i+3)],3,.091));
+var x = 150;
+for each(m in [1,.5,.2,.2,.1,.05,.02,.02,.01]){
+    masses.push(Mass([x,40],m*20+10,m));
+    x += m*20+10+5;
+}
+
+//masses.push(Mass([200,200],20,1));
+
+canv.addEventListener('mousedown',events,true);
+canv.addEventListener('mouseup',events,true);
+document.body.addEventListener('mousemove',events,true);
+document.body.addEventListener('contextmenu',function(e){e.preventDefault();return false;},true);
+setInterval(update,100);
+
+
+</script>
+</body>
+</html>

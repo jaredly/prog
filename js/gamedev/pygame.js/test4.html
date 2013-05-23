@@ -1,0 +1,55 @@
+<html>
+<head>
+<title>Pygame.js</title>
+<script src="../include.js"></script>
+</head>
+<body>
+<canvas id='pygame.js'></canvas>
+<canvas id='double' style='visibility:hidden'></canvas>
+<script src="pygame.js"></script>
+<script>
+
+var Guy = {pos:[100,100],dx:0,dy:0,
+event:function(e){
+    if (e.type=='keydown'){
+        if (e.keyCode==37){
+            this.dx -= 2;
+        }else if (e.keyCode==38){
+            this.dy -= 2;
+        }else if (e.keyCode==39){
+            this.dx += 2;
+        }else if (e.keyCode==40){
+            this.dy += 2;
+        }
+        if (this.dx>10)this.dx=10;
+        if (this.dx<-10)this.dx=-10;
+        if (this.dy>10)this.dy=10;
+        if (this.dy<-10)this.dy=-10;
+    }
+},step:function(){
+    this.dy += .5;
+    this.pos[0]+=this.dx;
+    this.pos[1]+=this.dy;
+    if (this.pos[0]<0){this.dx*=-1;this.pos[0]=0;}
+    if (this.pos[1]<0){this.dy*=-1;this.pos[1]=0;}
+    if (this.pos[0]>395){this.dx*=-1;this.pos[0]=395;}
+    if (this.pos[1]>395){this.dy*=-1;this.pos[1]=395;}
+},
+draw:function(scr){
+    scr.fill([0,0,255]);
+    pygame.draw.rect(scr,[0,255,0],this.pos.concat([5,5]));
+}};
+
+function Paddle(parent,pos,color,side){
+    var that = {parent:parent,pos:pos,color:color,side:side};
+    that.draw = function(screen){
+        pygame.draw.rect(screen,that.color,[pos[0],pos[1],10,40]);
+    };
+}
+
+var gm = Game();
+gm.objects.push(Guy);
+gm.loop()
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+body {
+    padding: 0;
+    margin: 10px;
+}
+
+#left-sidebar, #main-content {
+    border: 2px solid black;
+    height: 100%;
+    width: 100%;
+}
+
+#main-content {
+    border-left: none;
+}
+
+#left {
+    float: left;
+    height: 100%;
+    width: 20%;
+}
+
+#main {
+    float: left;
+    height: 100%;
+    width: 80%;
+}

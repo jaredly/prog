@@ -1,0 +1,101 @@
+<html>
+<head>
+<title>Rigid Bodies</title>
+<script src="/prog/js/lib/math.inc.js"></script>
+<script src="/prog/js/lib/classy_js.js"></script>
+<script src="/prog/js/lib/dom.inc.js"></script>
+</head>
+<body>
+
+<canvas id="screen"></canvas>
+
+<script>
+
+var Vector = Class([],{
+    __init__:function(self,t,m){
+        self.t=t;
+        self.m=m;
+    },
+    frompos:function(x,y){
+        return Vector(Math.atan2(y,x),dst(x,y));
+    },
+    x:function(self){
+        return Math.cos(self.t)*self.m;
+    },
+    y:function(self){
+        return Math.sin(self.t)*self.m;
+    },
+    add:function(self,other){
+        var x = self.x()+other.x();
+        var y = self.y()+other.y();
+        return Vector.frompos(x,y);
+    }
+});
+
+var Game = Class([],{
+   __init__:function(self,node,size){
+       self.canv = node;
+       self.ctx = self.canv.getContext('2d');
+       self.canv.width = size[0];
+       self.canv.height = size[1];
+       self.running = false;
+       self.objects = [];
+   },
+   pass:function(self,func){
+       for (var i=0;i<self.objects.length;i++){
+           self.objects[i][func].apply(self.objects[i],Array.prototype.slice.call(arguments,2));
+       }
+   },
+   event:function(self,e){
+       self.pass('event',e);
+   },
+   step:function(self){
+       self.pass('step');
+   },
+   draw:function(self){
+       self.pass('draw',self.ctx);
+   },
+   loop:function(self){
+       if (!self.running)return false;
+       self.step();
+       self.draw();
+       setTimeout(self.loop,50);
+   },
+   start:function(self){
+       self.running = true;
+       self.loop();
+   }
+});
+
+var Block = Class([],{
+    __init__:function(self,pos,size,mass){
+        self.pos = pos;
+        self.size = size;
+        self.mass=mass;
+        self.theta = 0;
+        self.v = Vector(0,0);
+        self.omega = 0;
+    },
+    step:function(self){
+        self.theta+=.1;
+    },
+    draw:function(self,ctx){
+        var pts = morph_poly(_rect2pts(0,0,self.size[0],self.size[1]),self.pos,self.theta);
+        ctx.beginPath();
+        ctx.strokeStyle='black';
+        ctx.moveTo(pts[pts.length-1][0],pts[pts.length-1][1]);
+        for (var i=0;i<pts.length;i++)
+            ctx.lineTo(pts[i][0],pts[i][1]);
+        ctx.stroke();
+    }
+});
+
+var g = Game($('screen'),[500,500]);
+var b = Block([100,100],[20,100],10);
+g.objects.push(b);
+g.start();
+</script>
+
+
+</body>
+</html>

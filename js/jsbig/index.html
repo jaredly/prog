@@ -1,0 +1,21 @@
+<html><head>
+<link rel='stylesheet' href='../include.css'/>
+<link rel='stylesheet' href='jsbig.css'/>
+</head>
+
+<body>
+
+<script src="../include.js"></script>
+
+<textarea id="text">
+
+var Gg="Before load";function _B_Err(a){var b="?ui=1&view=jserr&jsstate="+encodeURIComponent(Gg)+"&jsmsg="+encodeURIComponent(a)+"&random="+(new Date).getTime();if(Af("JS_SENT")||Gg=="Done loading"){(new Image).src=b}else{top.main.SendJS(b);A8("JS_SENT","X",86400)}if(window._DumpException){GC(a)}return true}window.onerror=_B_Err;function _B_Progress(a,b){try{if(a<100){top.main.Progress(a,b);Gg="Loading "+a+"%"}else{top.main.LoadDone();Gg="Done loading"}}catch(c){}}function _B_InitDone(){Gg="Init done"}
+2;function Gb(){this.Gz=new Array(10);this.Gy=0;this.Gn=0;this.Gu=""}Gb.prototype={C:function(){if(this.Gn>0){this.Gu+=","}this.Gu+="[";this.Gz[this.Gy++]=this.Gn;this.Gn=0},F:function(){this.Gu+="]\n";Ge(this.Gy>0);this.Gn=this.Gz[--this.Gy];this.Gn++},B:function(a){if(AK(a)){this.C();for(var b=0;b<a.length;b++){this.B(a[b])}this.F()}else{if(this.Gn>0){this.Gu+=","}if(a!=null){this.Gu+=Bo(a)}this.Gn++}},toString:function(){Ge(this.Gy==0);return this.Gu}};var BG=navigator.userAgent.toLowerCase();
+
+</textarea>
+<button id="ok">Ok</button><button id='href' onclick='hrefs()'>Href</button>
+<br>
+<div id="res"></div>
+<script src="jsbig.js"></script>
+
+</body>
