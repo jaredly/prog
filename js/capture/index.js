@@ -2,7 +2,9 @@
 function polygon(ctx,pts){
     if (!pts || pts.length<2)return;
     ctx.moveTo(pts[0][0],pts[0][1]);
-    [ctx.lineTo(x,y) for each([x,y] in pts.slice(1))];
+    for (var i=1; i<pts.length; i++) {
+        ctx.lineTo(pts[i][0], pts[i][1]);
+    }
 }
 var int = parseInt;
 function Ship(parent,color,pos,keys){
@@ -117,14 +119,16 @@ function Flag(parent,color,pos){
             }
             that.v = that.v.add(Vector(that.dir_to(that.attached.pos),dt/80));
             
-            for each(o in parent.objects){
+            for (var i=0; i<parent.objects.length; i++){
+                var o = parent.objects[i];
                 if (that==o || o==that.attached)continue;
                 if (that.dist_to(o.pos)<that.dist_to(that.attached.pos)){
                     that.attached = o;
                 }
             }
         }else{
-            for each(o in parent.objects){
+            for (var i=0; i < parent.objects.length; i++){
+                var o = parent.objects[i];
                 if (that==o)continue;
                 if (that.dist_to(o.pos)<20){
                     that.attached = o;

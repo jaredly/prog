@@ -143,7 +143,29 @@ document.body.addEventListener("mousemove", function(e){
 },false);
 
 font=$("font");
-fonts = eval(sendSync("list.cgi"));
+fonts = ['ASENINE_.ttf.svg',
+    'ASENST__.ttf.svg',
+    'ASENT___.ttf.svg',
+    'ASENW___.ttf.svg',
+    /*'Aldo-PC.ttf.svg',
+    'Alte-Haas-Grotesk-Bold.ttf.svg',
+    'Alte-Haas-Grotesk.ttf.svg',*/
+    'Liberation-Bold.svg',
+    'Liberation-Regular.svg',
+    'LiberationSerif-Bold.ttf.svg',
+    'LiberationSerif-BoldItalic.ttf.svg',
+    'LiberationSerif-Italic.ttf.svg',
+    'LiberationSerif-Regular.ttf.svg',
+    'ParmaPetit-HeavySwinging.ttf.svg',
+    'ParmaPetit-Italic.ttf.svg',
+    'ParmaPetit-Normal.ttf.svg',
+    // 'ParmaPetitOutline.ttf.svg',
+    'ParmaPetitSCItalic.ttf.svg',
+    'Petit-Normal.svg',
+    'bluebold.ttf.svg',
+    'bluecond.ttf.svg',
+    'bluehigh.ttf.svg',
+    'bluehigl.ttf.svg'];
 for (var i=0;i<fonts.length;i++){
     o=font.appendChild(document.createElement("option"));
     o.value = fonts[i];

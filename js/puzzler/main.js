@@ -210,12 +210,14 @@ function setBest(xs,ys){
     var by = [100,0];
     console.log("Image",puzzle.image.width,puzzle.image.height);
     
-    for each(w in xs){
+    for (var i=0; i < xs.length; i++){
+        var w = xs[i];
         var diff = puzzle.image.width - Math.round(puzzle.image.width/w)*w;
         console.log("w",w,diff);
         if (Math.abs(diff)<Math.abs(bx[0]))bx=[diff,w];
     }
-    for each(h in ys){
+    for (var i=0; i < ys.length; i++){
+        var h = ys[i];
         var diff = puzzle.image.height - Math.round(puzzle.image.height/h)*h;
         console.log("h",h,diff);
         if (Math.abs(diff)<Math.abs(by[0]))by=[diff,h];

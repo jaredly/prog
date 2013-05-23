@@ -268,7 +268,9 @@ function Static_Box(pos,sz,c){
 function draw_polygon(ctx,pts){
     if (!pts || pts.length<2)return;
     ctx.moveTo(pts[0][0],pts[0][1]);
-    [ctx.lineTo(x,y) for each([x,y] in pts.slice(1))];
+    for (var i=1; i<pts.length; i++){
+        ctx.lineTo(pts[i][0], pts[i][1]);
+    }
 }
 
 
@@ -292,22 +294,37 @@ function Game(node,size){
     that.initialize = function(){};
     that._event = function(e){
         that.event(e);
-        [o.event(e) for each(o in that.objects)];
+        for (var i=0; i<that.objects.length; i++){
+            that.objects[i].event(e);
+        }
     }
     that.event = function(){};
     that.events = function(){
-        [that._event(e) for each(e in that._handler.get())];
+        var events = that._handler.get();
+        for (var i=0; i<events.length; i++){
+            that._event(events[i]);
+        }
     }
     that.collide = function(){
         var collisions = [];
-        
-        [[(a.collides_with(b) && collisions.indexOf([b,a])==-1 && collisions.push([a,b])) for each (a in that.objects)] for each(b in that.objects)];
+
+        for (var i=0; i<that.objects.length; i++){
+            var a = that.objects[i];
+            for (var j=0; j<that.objects.length; j++){
+                var b = that.objects[j];
+                if (a.collides_with(b) && collisions.indexOf([b,a])==-1) {
+                    collisions.push([a,b]);
+                }
+            }
+        }
         for (var i=0;i<collisions.length;i++){
             
         }
     }
     that.step = function(){
-        [o.step(1/that.fps) for each(o in that.objects)];
+        for (var i=0; i<that.objects.length; i++) {
+            that.objects[i].step(1/that.fps);
+        }
     }
     that.draw = function(){
         /*var aso = that.ctx.globalAlpha;
@@ -320,8 +337,14 @@ function Game(node,size){
             that.ctx.fillRect(0,0,that.size[0],that.size[1]);
         }
         //that.draw(that.ctx);
-        var zsorted = [[o.z,o] for each(o in that.objects)].sort();
-        [o[1].draw(that.ctx) for each(o in zsorted)];
+        var zsorted = [];
+        for (var i=0; i<that.objects.length; i++) {
+            zsorted.push([that.objects[i].z,that.objects[i]]);
+        }
+        zsorted = zsorted.sort();
+        for (var i=0; i<zsorted.length; i++){
+            zsorted[i][1].draw(that.ctx);
+        }
     }
     that.loop = function(){
         if (!that.running){

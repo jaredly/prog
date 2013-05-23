@@ -1,9 +1,9 @@
 <html>
 <head>
     <title>Tree</title>
-    <script src="dom.inc.js"></script>
-    <script src="math.inc.js"></script>
-    <script src="canvas.inc.js"></script>
+    <script src="../lib/dom.inc.js"></script>
+    <script src="../lib/math.inc.js"></script>
+    <script src="../lib/canvas.inc.js"></script>
 </head>
 <body>
     <script>
@@ -13,9 +13,13 @@
     
     var trees = [];
     
-    function drawTree([pos,ang,len]){
+    function drawTree(p1){
+        var pos = p1[0];
+        var ang = p1[1];
+        var len = p1[2];
         
-        var [x,y] = Vector(ang,len).pos();
+        var p1  = Vector(ang,len).pos();
+        var x = p1[0], y = p1[1];
         var lf = Vector(ang+pi,len/20).pos();
         var rt = Vector(ang-pi,len/20).pos();
         
@@ -37,7 +41,8 @@
     
     function dTree(pos,ang,len,d){
         if (d<=0)return;
-        var [x,y] = Vector(ang,len).pos();
+        var p1  = Vector(ang,len).pos();
+        var x = p1[0], y = p1[1];
         
         var lf = Vector(ang+pi,len/20).pos();
         var rt = Vector(ang-pi,len/20).pos();

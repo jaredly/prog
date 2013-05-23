@@ -61,7 +61,8 @@ function _load(xmldata){
     var maxx = 0;
     var maxy = 0;
     for (var ia=0;ia<mx.length;ia++){
-        var [x,y] = mx[ia].split(" ");
+        var y  = mx[ia].split(" ")[1];
+        var x =  mx[ia].split(" ")[0];
         if (parseInt(x)>maxx)maxx=parseInt(x);
         if (parseInt(y)>maxy)maxy=parseInt(y);
     }

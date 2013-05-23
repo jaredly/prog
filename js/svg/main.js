@@ -38,8 +38,10 @@ function Box(parent,node,x,y,fill){
     //that.ondown = function(){node.select();}
     document.addEventListener("mousemove",function(e){
         if (that._moving){
-            var [x,y]=ePos(e);
-            var [dx,dy]=[x-that._moving[0],y-that._moving[1]];
+            var y =ePos(e)[1];
+            var x = ePos(e)[0];
+            var dx=x-that._moving[0],
+                dy=y-that._moving[1];
             that.onmove([x,y],[dx,dy]);
             that._moving = [x,y];
             that.setCenter(x,y);
@@ -54,8 +56,8 @@ function Box(parent,node,x,y,fill){
         return [that.x.baseVal.value+3.5,that.y.baseVal.value+3.5];
     }
     that.tostr = function(){
-        var [x,y]=that.getCenter();
-        return x+","+y;
+        var pos=that.getCenter();
+        return pos[0] +","+ pos[1];
     }
     return that;
 }
@@ -63,7 +65,10 @@ function Box2(parent,node,x,y,funcs,partners,fill){
     var that = Box(parent,node,x,y,fill);
     that.onmove = function(pos,d){
         if (partners){
-            [partner.move(d[0],d[1]) for each(partner in partners)];
+            for (var i=0; i < partners.length; i++) {
+                var partner = partners[i];
+                partner.move(d[0],d[1]);
+            }
         }
         that._onmove(pos,d);
     }
@@ -71,14 +76,17 @@ function Box2(parent,node,x,y,funcs,partners,fill){
         partners.push(x);
     }
     that._onmove = function(pos,d){
-        [func(pos[0],pos[1]) for each(func in funcs)];
+        for (var i=0; i < funcs.length; i++) {
+            var func = funcs[i];
+            func(pos[0],pos[1]);
+        }
         node.update();
     }
     that.add_func = function(x){funcs.push(x);};
     that.move = function(x,y){
-        var [a,b] = that.getCenter();
-        that.setCenter(a+x,b+y);
-        that._onmove([a+x,b+y]);
+        var pos = that.getCenter();
+        that.setCenter(pos[0]+x,pos[1]+y);
+        that._onmove([pos[0]+x,pos[1]+y]);
     }
     return that;
 }
@@ -111,8 +119,7 @@ function Rect(parent,x,y,w,h){
     var that = SuperNode(parent,"rect");
     var pos = null;
     
-    var [left,top] = [x,y];
-    var [width,height] = [w,h];
+    var left = x, top = y, width = w, height = h;
     
     that.onmove = function(pos,pos2){/*console.log(pos,pos2);*/}
     set(that,"x",x);
@@ -122,8 +129,10 @@ function Rect(parent,x,y,w,h){
     set(that,"fill","blue");
     document.addEventListener("mousemove",function(e){
         if (that._moving){
-            var [ex,ey]=ePos(e);
-            var [dx,dy]=[ex-that._moving[0],ey-that._moving[1]];
+            var epos =ePos(e);
+            var x = epos[0], y = epos[1];
+            var dx = ex-that._moving[0],
+                dy = ey-that._moving[1];
             that._moving = [ex,ey];
             that.onmove([ex,ey],[dx,dy]);
             left+=dx;
@@ -187,7 +196,8 @@ function Rect(parent,x,y,w,h){
     box3.onmove = function(pos,rel){
         width+=pos[0]-width-left;
         height+=pos[1]-height-top;
-        [left,top]=[pos[0]-width,pos[1]-height];
+        var left = pos[0]-width,
+            top=pos[1]-height;
         that.update();
     }
     box4.onmove = function(pos,rel){
@@ -205,8 +215,10 @@ function Ellipse(parent,cx,cy,rx,ry){
     var that = SuperNode(parent,"ellipse");
     var pos = null;
     
-    var [width,height] = [rx*2,ry*2];
-    var [left,top] = [cx-rx,cy-ry];
+    var height = ry*2;
+    var width = rx*2;
+    var top = cy-ry;
+    var left = cx-rx;
     
     that.onmove = function(pos,pos2){}
     set(that,"cx",cx);
@@ -216,9 +228,10 @@ function Ellipse(parent,cx,cy,rx,ry){
     set(that,"fill","blue");
     document.addEventListener("mousemove",function(e){
         if (that._moving){
-            var [ex,ey]=ePos(e);
-            var [dx,dy]=[ex-that._moving[0],ey-that._moving[1]];
-            that._moving = [ex,ey];
+            var epos =ePos(e);
+            var dy= epos[1] - that._moving[1];
+            var dx = epos[0] - that._moving[0];
+            that._moving = epos;
             left+=dx;
             top+=dy;
             that.update();
@@ -370,14 +383,23 @@ function Path(parent,d,lcolor,lwidth,fcolor){ /************** test this -- espec
     
     that.update = function(){
         var txt = "";
-        [txt+=i.tostring() for each(i in that.segments)]
+        for (var i=0; i < that.segments.length; i++) {
+            var i = that.segments[i];
+            txt+=i.tostring();
+        }
         set(that,"d",txt);
     }
     that.show = function(){
-        [i.show() for each(i in that.segments)]
+        for (var i=0; i < that.segments.length; i++) {
+            var i = that.segments[i];
+            i.show();
+        }
     }
     that.hide = function(){
-        [i.hide() for each(i in that.segments)]
+        for (var i=0; i < that.segments.length; i++) {
+            var i = that.segments[i];
+            i.hide();
+        }
     }
     
     that.properties = function(){
@@ -393,7 +415,10 @@ function Path(parent,d,lcolor,lwidth,fcolor){ /************** test this -- espec
     that._delete = function(){
         parent.removeChild(that);
         if (selected.indexOf(that)!=-1)selected.splice(selected.indexOf(that),1);
-        [seg._delete() for each(seg in that.segments)];
+        for (var i=0; i < that.segments.length; i++) {
+            var seg = that.segments[i];
+            seg._delete();
+        }
     }
     that.split = function(){alert("Not Implemented");}
     that.join = function(){
@@ -450,16 +475,23 @@ function Path(parent,d,lcolor,lwidth,fcolor){ /************** test this -- espec
         }
     }
     that.move = function(dx,dy){
-        [i.move(dx,dy) for each(i in that.segments)];
+        for (var i=0; i < that.segments.length; i++) {
+            var i = that.segments[i];
+            i.move(dx,dy);
+        }
     }
     parent.addEventListener("mousemove",function(e){
         e.stopPropagation();
         if (that._moving==false)return;
-        var [x,y] = ePos(e);
-        var [ox,oy] = that._moving;
-        var [dx,dy] = [x-ox,y-oy];
-        that._moving = [x,y];
-        [i.move(dx,dy) for each(i in selected)]
+        var epos = ePos(e);
+        var opos = that._moving;
+        var dx = epos[0]-opos[0];
+        var dy = epos[1]-opos[1];
+        that._moving = epos;
+        for (var i=0; i < selected.length; i++) {
+            var i = selected[i];
+            i.move(dx,dy);
+        }
         that.update();
     },true);
     parent.addEventListener("mouseup",function(ev){
@@ -492,10 +524,16 @@ function Segment(type){
         }
     }
     that.move = function(x,y){
-        [i.move(x,y) for each(i in that.boxes)]
+        for (var i=0; i < that.boxes.length; i++) {
+            var i = that.boxes[i];
+            i.move(x,y);
+        }
     }
     that._delete = function(){
-        [i.parentNode.removeChild(i) for each(i in that.boxes)];
+        for (var i=0; i < that.boxes.length; i++) {
+            var i = that.boxes[i];
+            i.parentNode.removeChild(i);
+        }
     }
     return that;
 }
@@ -519,12 +557,18 @@ function Cubic(parent,path,x,y,a,b,c,d,e,f){
         return "M"+b1.tostr()+" C"+[b2.tostr(),b3.tostr(),b4.tostr()].join(" ");
     }
     that.clone = function(npath,endbox,startbox){
-        var [ex,ey]=endbox.getCenter();
-        var [sx,sy]=startbox.getCenter();
-        var [ax,ay]=b1.getCenter();
-        var [aa,ab]=b2.getCenter();
-        var [ac,ad]=b3.getCenter();
-        var [ae,af]=b4.getCenter();
+        var p1 =endbox.getCenter();
+        var ex = p1[0], ey = p1[1];
+        var p1 =startbox.getCenter();
+        var sx = p1[0], sy = p1[1];
+        var p1 =b1.getCenter();
+        var ax = p1[0], ay = p1[1];
+        var p1 =b2.getCenter();
+        var aa = p1[0], ab = p1[1];
+        var p1 =b3.getCenter();
+        var ac = p1[0], ad = p1[1];
+        var p1 =b4.getCenter();
+        var ae = p1[0], af = p1[1];
         if (distance(ex,ey,ax,ay)<distance(ex,ey,ae,af)){
             return Partial_Cubic(parent,npath,endbox,aa,ab,ac,ad,ae,af);
         }else{
@@ -536,7 +580,8 @@ function Cubic(parent,path,x,y,a,b,c,d,e,f){
 }
 function Partial_Cubic(parent,path,b1,a,b,c,d,e,f){
     var that = Segment("Cubic");
-    var [x,y] = b1.getCenter();
+    var p1  = b1.getCenter();
+    var x = p1[0], y = p1[1];
     var l1 = Line(parent,x,y,a,b,"lightblue");
     var l2 = Line(parent,c,d,e,f,"lightblue");
     l1.move = l2.move = function(){};
@@ -553,11 +598,16 @@ function Partial_Cubic(parent,path,b1,a,b,c,d,e,f){
         return " C"+[b2.tostr(),b3.tostr(),b4.tostr()].join(" ");
     }
     that.clone = function(npath,endbox){
-        var [ex,ey]=endbox.getCenter();
-        var [ax,ay]=b1.getCenter();
-        var [aa,ab]=b2.getCenter();
-        var [ac,ad]=b3.getCenter();
-        var [ae,af]=b4.getCenter();
+        var p1 =endbox.getCenter();
+        var ex = p1[0], ey = p1[1];
+        var p1 =b1.getCenter();
+        var ax = p1[0], ay = p1[1];
+        var p1 =b2.getCenter();
+        var aa = p1[0], ab = p1[1];
+        var p1 =b3.getCenter();
+        var ac = p1[0], ad = p1[1];
+        var p1 =b4.getCenter();
+        var ae = p1[0], af = p1[1];
         if (distance(ex,ey,ax,ay)<distance(ex,ey,ae,af)){
             return Partial_Cubic(parent,npath,endbox,aa,ab,ac,ad,ae,af);
         }else{
@@ -636,7 +686,8 @@ p.segments.push(s);
 p.update();
 
 main.addEventListener("mousedown",function(e){
-    var [x,y]=ePos(e);
+    var p1 =ePos(e);
+    var x = p1[0], y = p1[1];
     if (creating=="ellipse"){
         var temp = Ellipse(main,x,y,2,2);
         temp.boxes[2]._moving=[x,y];

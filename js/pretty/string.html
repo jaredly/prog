@@ -9,7 +9,9 @@
 
 <script>
 
-function poc([cx,cy],r,t){
+function poc(p1,r,t){
+    var cx = p1[0];
+    var cy = p1[1];
     return [cx+r*Math.cos(t), cy+r*Math.sin(t)];
 }
 
@@ -18,7 +20,8 @@ function chord(cn,r,ti,tf,c){
 }
 
 function draw_chord(ctx,cn,r,ti,tf){
-    var [p1,p2] = chord(cn,r,ti,tf);
+    var p2  = chord(cn,r,ti,tf)[1];
+    var p1 =  chord(cn,r,ti,tf)[0];
     //console.log(p1,p2);
     ctx.beginPath();
     ctx.moveTo(int(p1[0]),int(p1[1]));
@@ -72,7 +75,9 @@ var num = 41;
     
     
     
-    function calcpos(t1,m1,t2,m2,[x,y]){
+    function calcpos(t1,m1,t2,m2,p1){
+        var x = p1[0];
+        var y = p1[1];
         var pz = Vector(t1,m1).add(Vector(t2,m2)).pos();
         return [pz[0]+x,pz[1]+y];
     }

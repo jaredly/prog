@@ -67,7 +67,8 @@ function update(){
     i.src = c.toDataURL();
 }
 
-for each(inp in document.getElementsByTagName("input")){
+for (var i=0; i < document.getElementsByTagName("input").length; i++){
+    var inp = document.getElementsByTagName("input")[i];
     inp.onblur = update;
 }
 
