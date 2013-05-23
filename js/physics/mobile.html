@@ -2,7 +2,7 @@
 <head>
 <title>Mobile Simulator</title>
 <script src="../include.js"></script>
-<script src='../classy_js.js'></script>
+<script src='../lib/classy_js.js'></script>
 </head>
 <body>
 <style>
@@ -84,16 +84,22 @@ var Rect = Class([],{
         else ys = (self.y-other.y)<other.h;
         return xs && ys;
     },
-    collidepoint:function(self,[x,y]){
+    collidepoint:function(self,p1){
+        var x = p1[0];
+        var y = p1[1];
         return (self.x<=x && x<=self.x+self.w && self.y<=y && y<=self.y+self.h);
     },
     pts:function(self){
         return [self.x,self.y,self.w,self.h];
     },
-    move:function(self,[x,y]){
+    move:function(self,p1){
+        var x = p1[0];
+        var y = p1[1];
         return Rect(self.x+x,self.y+y,self.w,self.h);
     },
-    move_ip:function(self,[x,y]){
+    move_ip:function(self,p1){
+        var x = p1[0];
+        var y = p1[1];
         self.x+=x;
         self.y+=y;
     }
@@ -104,22 +110,31 @@ function fact(x){
     return x;
 }
 
-function rgb2c([r,g,b]){return 'rgb('+parseInt(r)+','+parseInt(g)+','+parseInt(b)+')';}
+function rgb2c(rgb){
+    return 'rgb('+parseInt(rgb[0])+','+parseInt(rgb[1])+','+parseInt(rgb[2])+')';}
 
-function hsl2c([h,s,l]){return 'hsl('+parseInt(h)+','+parseInt(s)+','+parseInt(l)+')';}
+function hsl2c(hsl){return 'hsl('+parseInt(hsl[0])+','+parseInt(hsl[1])+','+parseInt(hsl[2])+')';}
 
 var Ctx = Class([],{
     __init__:function(self,ctx){
         self.ctx = ctx;console.log(ctx);
     },
-    line:function(self,[x,y],[a,b],color){
+    line:function(self,p1,p2,color){
+        var x = p1[0];
+        var y = p1[1];
+        var a = p2[0];
+        var b = p2[1];
         self.ctx.strokeStyle = rgb2c(color);
         self.ctx.beginPath();
         self.ctx.moveTo(x,y);
         self.ctx.lineTo(a,b);
         self.ctx.stroke();
     },
-    line2:function(self,[x,y],[a,b],color,w){
+    line2:function(self,p1,p2,color,w){
+        var x = p1[0];
+        var y = p1[1];
+        var a = p2[0];
+        var b = p2[1];
         if (w)self.ctx.lineWidth = w;
         self.ctx.strokeStyle = rgb2c(color);
         self.ctx.beginPath();
@@ -127,7 +142,11 @@ var Ctx = Class([],{
         self.ctx.lineTo(x+a,y+b);
         self.ctx.stroke();
     },
-    rect:function(self,[x,y,a,b],color,w){//console.log(self,x,y,a,b
+    rect:function(self,pts,color,w){//console.log(self,x,y,a,b
+        var x=pts[0],
+            y=pts[1],
+            a=pts[2],
+            b=pts[3];
         if (w){
             self.ctx.strokeStyle = rgb2c(color);
             self.ctx.lineWidth = w;
@@ -147,7 +166,9 @@ var Ctx = Class([],{
         self.ctx.fillStyle = rgb2c(color);
         self.ctx.fillRect(0,0,500,500);
     },
-    circle:function(self,[x,y],r,color){
+    circle:function(self,p1,r,color){
+        var x = p1[0];
+        var y = p1[1];
         self.ctx.fillStyle = rgb2c(color);
         self.ctx.beginPath();
         self.ctx.arc(x,y,r,0,Math.PI*2,true);
@@ -172,12 +193,18 @@ function colorimg(color){
     return i;
 }
 
-function dist([x,y],[a,b]){
+function dist(p1,p2){
+    var a = p2[0];
+    var b = p2[1];
+    var x = p1[0];
+    var y = p1[1];
     return Math.sqrt((a-x)*(a-x)+(b-y)*(b-y));
 }
 
 var Rod = Class([],{
-    __init__:function(self,[x,y],width,mass,color){
+    __init__:function(self,p1,width,mass,color){
+        var x = p1[0];
+        var y = p1[1];
         
         self.color = color;
         self.realwidth = width*0.3048;
@@ -212,7 +239,9 @@ var Rod = Class([],{
         return m;
     },
     toppos:function(self){return [self.rect.x+self.r,self.rect.y-15];},
-    settoppos:function(self,[x,y]){
+    settoppos:function(self,p1){
+        var x = p1[0];
+        var y = p1[1];
         self.rect.x = x-self.r;
         self.rect.y = y+15;
         if (self.mass1)self.mass1.settoppos(self.m1pos());
@@ -257,7 +286,8 @@ var Rod = Class([],{
     },
     event:function(self,e){
         if (e.type=="mousedown"){
-            var [x,y] = mousePos(e);
+            var p1  = mousePos(e);
+            var x = p1[0], y = p1[1];
             if (e.button==2 && self.rect.collidepoint([x,y])){
                 return;
             }
@@ -280,7 +310,8 @@ var Rod = Class([],{
                 return true;
             }
         }else if (e.type=='mousemove'){
-            var [x,y] = mousePos(e);
+            var p1  = mousePos(e);
+            var x = p1[0], y = p1[1];
             if (self.moving==1){
                 var dx = (x-self.r)-self.rect.x;
                 var dy = (y+15)-self.rect.y;
@@ -337,7 +368,9 @@ var Rod = Class([],{
 });
 
 var Mass = Class([],{
-    __init__:function(self,[x,y],width,mass,color){
+    __init__:function(self,p1,width,mass,color){
+        var x = p1[0];
+        var y = p1[1];
         self.rect = Rect(x,y,width,width);
         self.mass = mass;
         self.top = false;
@@ -356,7 +389,9 @@ var Mass = Class([],{
         return m;
     },
     toppos:function(self){return [self.rect.x+self.rect.w/2,self.rect.y-15];},
-    settoppos:function(self,[x,y]){
+    settoppos:function(self,p1){
+        var x = p1[0];
+        var y = p1[1];
         self.rect.x = x-self.rect.w/2;
         self.rect.y = y+15;
         if (self.bottom)
@@ -373,7 +408,8 @@ var Mass = Class([],{
     },
     event:function(self,e){
         if (e.type=="mousedown"){
-            var [x,y] = mousePos(e);
+            var p1  = mousePos(e);
+            var x = p1[0], y = p1[1];
             if (dist([x,y],self.toppos())<10 || self.rect.collidepoint([x,y])){
                 self.moving = 1;
                 self.log.style.backgroundColor = 'rgb(250,255,100)';

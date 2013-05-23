@@ -36,13 +36,13 @@
     function Demo1(){ /** cool + artzy + black/red WARRR **/
         var g = Game(c,[800,800]);
         g.redraw=false;
-        for (var i=1;i<20;i++){
-            g.objects.push(Circler(g,5,"red",[200,200],i*5,1000));
+        for (var i=1;i<40;i++){
+            g.objects.push(Circler(g,5,"red",[400,400],i*5,5000));
         }
-        for (var i=1;i<20;i++){
-            g.objects.push(Circler(g,5,"black",[200,200],i*5,-1000));
+        for (var i=1;i<40;i++){
+            g.objects.push(Circler(g,5,"black",[400,400],i*5,-5000));
         }
-        g.fps = 40;
+        g.fps = 60;
         g.run();
     }
     

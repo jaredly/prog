@@ -10,7 +10,7 @@ function new_class(){
             return cls[func].apply(self,args);
         }
     }
-    var extends = to_array(arguments);
+    var extend = to_array(arguments);
     
     var cls = function(){
         var self = {};self.__init__ = function(){};
@@ -37,7 +37,8 @@ function new_class(){
         return self;
     }
     
-    for each(ext in extends){
+    for (var i=0; i < extend.length; i++){
+        var ext = extend[i];
         for (attr in ext){
             if (attr=='prototype')continue;
             cls[attr] = ext[attr];
