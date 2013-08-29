@@ -1,0 +1,146 @@
+<html>
+<head>
+    <title>Projects</title>
+    <script src="js/ajax.js"></script>
+    <script src="js/include.js"></script>
+    <link rel="shortcut icon" href="/favicon.png" type="image/png">
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <style>
+    body {
+        padding: 20px;
+        background-color: #99FF80;
+        font: 76% Verdana,Arial,sans-serif
+    }
+    #main{list-style-type: none;margin:0 15px;padding:0}
+    #main li{float:left;width:104px;margin: 10px 10px 0 0;background-color: #FFF}
+    #main li img{display: block;width: 80px;height: 80px;margin:1px 6px;border: 3px solid white;padding:3px}
+    
+    div.top {
+        position:absolute;
+        padding:0px;
+        margin:0px;
+        width:100%;
+        height:25px;
+        top:0px;
+        left:0px;
+        background-color:#73BF60;
+    }
+    #top {margin: 0px; padding: 4px 10px;}
+    
+    div.box {
+        width:10px;
+        height:10px;
+        border:3px double white;
+        background-color: white;
+        display:inline;
+        margin-bottom:-4px;
+        margin-right:4px;
+        margin-left:4px;
+    }
+    
+    div.email {
+        position:absolute;
+        top: 2px;
+        right: 5px;
+    }
+    
+    div.email img {
+        margin-bottom: -6px;
+    }
+    
+    </style>
+    <link rel="stylesheet" type="text/css" href="niftyCorners.css">
+    <link rel="stylesheet" type="text/css" href="niftyPrint.css" media="print">
+    <script type="text/javascript" src="nifty.js"></script>
+</head>
+<body>
+    <div class="top">
+        <div id="top">Jared Forsyth's Programs</div>
+    </div>
+    <div class="email"><span>Contact me: </span><img src="mail.png"/></div>
+    <ul id="main">
+        
+    </ul>
+    <script>
+    function handleErr(msg,url,l)
+{
+txt="There was an error on this page.\n\n";
+txt+="Error: " + msg + "\n";
+txt+="URL: " + url + "\n";
+txt+="Line: " + l + "\n\n";
+txt+="Click OK to continue.\n\n";
+alert(txt);
+return true;
+}
+onerror=handleErr;
+
+    
+    var projects = [];
+    var colors = {"Javascript":"#77DD60","WebApp":"#8A97FF","Flash":"#FFB460","Python":"#FF79CC"};
+    function cE(e){return document.createElement(e);}
+    function $(e){return document.getElementById(e);}
+    function cTN(e){return document.createTextNode(e);}
+    function add_color(type,color){
+        var d = cE("div");
+        var sp = $("top").appendChild(d);
+        $("top").appendChild(cTN(type));
+        sp.className = "box";
+        sp.innerHTML = "&nbsp;&nbsp;&nbsp;";
+        sp.style.borderColor = color;
+    }
+    
+    for (var type in colors){
+        add_color(type,colors[type]);
+    }
+    
+    function make_project(data){
+        var a = $('main').appendChild(cE("li")).appendChild(cE('a'));
+        var that = a.appendChild(cE("img"));
+        var color = colors[data.Type] || "#FFF";
+        that.className = "project";
+        a.title = data.Desc;
+        that.src = data.Img
+        a.href = data.File
+        that.style.borderColor = color;
+        Rounded(a,"#99FF80","#FFF");//color);
+        return that;
+    }
+    
+    function strip(x){
+        var st = 0,ed = x.length;
+        for (var st=0;st<x.length;st++){if (x[st]!=" ")break;}
+        for (var ed=x.length-1;ed>=0;ed--){if (x[ed]!=" ")break;}
+        return x.slice(st,ed+1)
+    }
+    
+    function parse_data(text){
+        var ret = {};
+        var lines = text.split("\n");
+        for (var i=0;i<lines.length;i++){
+            var kv = lines[i].split(":");
+            ret[kv[0]] = strip(kv[1]);
+        }
+        return ret;
+    }
+    
+    function load_projects(x){
+        var text = x.responseText;
+        var all = text.split("\n\n")
+        for (var i=0;i<all.length;i++){
+            var data = parse_data(all[i]);
+            make_project(data)
+        }
+    }
+    
+    sendRequest("projects.txt",load_projects)
+    </script>
+    <script type="text/javascript">
+    var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+    document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+    </script>
+    <script type="text/javascript">
+    var pageTracker = _gat._getTracker("UA-7002862-1");
+    pageTracker._trackPageview();
+    </script>
+</body>
+</html>

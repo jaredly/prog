@@ -1,0 +1,119 @@
+Name: JsExpander
+File: js/jsbig/
+Img: js/jsbig/.shot.png
+Desc: A de-minifier for javascript -- extremely useful for hacking google's js, etc.
+Type: Javascript
+
+Name: Iconr
+File: js/icon/
+Img: js/icon/.shot.png
+Desc: A small image editor, suitable for making favicons or other small .pngs
+Type: WebApp
+
+Name: Physics Mobile
+File: js/physics/mobile.html
+Img: js/physics/mobile1.png
+Desc: A mini CAD program for use in building balanced mobiles
+Type: WebApp
+
+Name: FlipBookr
+File: js/flipbookr/
+Img: js/flipbookr/.shot.png
+Desc: A fun (and *very addicting*) flipbook creator. One of my most complete projects.
+Type: WebApp
+
+Name: Gradient
+File: js/gradient/
+Img: js/gradient/.shot.png
+Desc: A Gradient Image creater (using the canvas) that takes GET arguments
+Type: Javascript
+
+Name: Buttonr
+File: js/buttonr/
+Img: js/buttonr/.shot.png
+Desc: An ajaxy button creater -- COMPLETELY in Javascript and the Canvas (NO php). This is a proof of concept for my canvastext.js library, which loads and parses .svg converted font files to draw text.
+Type: Javascript
+
+Name: SLetter
+File: js/scarlet/
+Img: js/scarlet/.shot.png
+Desc: A "Search the Scarlet Letter" Utility, written for school
+Type: WebApp
+
+Name: Gatsby
+File: js/gatsby/
+Img: js/gatsby/.shot.png
+Desc: A "Search the Great Gatsby" Utility, written for school
+Type: WebApp
+
+Name: JsGame
+File: js/game/
+Img: js/game/.shot.png
+Desc: A Javascript Game Engine I'm writing
+Type: Javascript
+
+Name: Capture the Flag
+File: js/capture/
+Img: js/capture/.shot.png
+Desc: This is the beginning of a Space themed Capture the Flag game.
+Type: Javascript
+
+Name: SVGEditor
+File: js/svg/
+Img: js/svg/.shot.png
+Desc: An SVG editor
+Type: Javascript
+
+Name: JsSnake
+File: js/snake/
+Img: js/snake/.shot.png
+Desc: An All-JS implementation of snake, with several twists; watch out for the Mongeese!
+Type: Javascript
+
+Name: Puzzler
+File: js/puzzler/
+Img: js/puzzler/.shot.png
+Desc: A fun puzzle game that uses random images grabbed from Flickr
+Type: Javascript
+
+Name: Red Black
+File: js/pretty/redblack.html
+Img: js/pretty/redblack.png
+Desc: a pretty animation. looks kinda like war...or something
+Type: Javascript
+
+Name: Extreme Art
+File: js/pretty/extremeart.html
+Img: js/pretty/extremeart.png
+Desc: a fun time-waster. you end up with some pretty awesome looking art
+Type: Javascript
+
+Name: String Art
+File: js/pretty/string.html
+Img: js/pretty/string.png
+Desc: A really neat animation of circular string art
+Type: Javascript
+
+Name: TreeGen
+File: js/pretty/tree.html
+Img: js/pretty/tree.png
+Desc: A dynamic random tree generator and animator
+Type: Javascript
+
+Name: Missile Command
+File: js/missile/
+Img: js/missile/.shot.png
+Desc: Kickin it retro with Missile Command in Javascript
+Type: Javascript
+
+Name: Extreme Flash
+File: flash/ExtremeArt.swf
+Img: flash/ExtremeArt.png
+Desc: A flash implementation of "Extreme Art". created first, and probably better
+Type: Flash
+
+Name: Dominoes
+File: flash/haxe/Dominoes.swf
+Img: flash/haxe/Dominoes.png
+Desc: A dominoes simulator + editor (space bar to start/stop). Uses the Physaxe physics engine.
+Type: Flash
